@@ -3,87 +3,59 @@
 <head>
 <meta charset="UTF-8">
 <title>Cashflow Engine</title>
-
 <style>
-body {
-    background:#0f1115;
-    color:#fff;
-    font-family:Arial;
-    text-align:center;
-    padding:40px;
-}
-.container {
-    max-width:700px;
-    margin:auto;
-}
-.box {
-    background:#1a1d24;
-    padding:20px;
-    border-radius:10px;
-    margin:20px 0;
-}
-button {
-    padding:12px 20px;
-    background:#5cd6a0;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-    font-weight:bold;
-}
+body { background:#0f1115; color:#fff; font-family:Arial; text-align:center; padding:40px; }
+.box { background:#1a1d24; padding:20px; border-radius:10px; margin:20px auto; max-width:700px; }
+button { padding:10px 20px; border:none; border-radius:8px; background:#6ee7b7; cursor:pointer; }
+pre { text-align:left; white-space:pre-wrap; }
 </style>
 </head>
 
 <body>
 
-<div class="container">
-
 <h1>💰 Cashflow Decision Engine</h1>
 
 <div class="box">
-<form id="form">
-<input type="file" id="file" required>
+<input type="file" id="file">
 <br><br>
-<button type="submit">Analizza CSV</button>
-</form>
+<button onclick="send()">Analizza CSV</button>
 </div>
 
 <div class="box">
 <h2>Risultato</h2>
-<pre id="output">---</pre>
-</div>
-
+<pre id="output">--</pre>
 </div>
 
 <script>
-document.getElementById("form").onsubmit = async (e) => {
-    e.preventDefault();
-
+async function send() {
     const fileInput = document.getElementById("file");
 
     if (!fileInput.files.length) {
-        alert("Seleziona un file");
+        alert("Seleziona file");
         return;
     }
 
     const formData = new FormData();
     formData.append("file", fileInput.files[0]);
 
-    try {
-        const res = await fetch("/analyze", {
-            method: "POST",
-            body: formData
-        });
+    const res = await fetch("/analyze", {
+        method: "POST",
+        body: formData
+    });
 
-        const data = await res.json();
+    const data = await res.json();
 
+    if (data.raw) {
+        document.getElementById("output").innerText = data.raw;
+    } else {
         document.getElementById("output").innerText =
-            JSON.stringify(data, null, 2);
-
-    } catch (err) {
-        console.error(err);
-        alert("Errore richiesta");
+            "DIAGNOSIS: " + data.diagnosis + "\n" +
+            "RISK: " + data.risk + "\n" +
+            "MARGIN: " + data.margin + "\n" +
+            "CRITICAL CLIENT: " + data.critical_client + "\n" +
+            "ACTION: " + data.action;
     }
-};
+}
 </script>
 
 </body>
