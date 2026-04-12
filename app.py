@@ -10,10 +10,14 @@ app = Flask(__name__)
 def normalize_csv(file_path):
     df = pd.read_csv(file_path)
 
+    # 🔴 FIX: CSV senza header
+    if df.columns.tolist() == [0,1,2]:
+        df.columns = ["date", "client", "value"]
+
     col_map = {}
 
     for col in df.columns:
-        c = col.lower()
+        c = str(col).lower()
 
         if "date" in c or "data" in c:
             col_map[col] = "date"
