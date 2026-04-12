@@ -98,3 +98,14 @@ def analyze():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
+@app.route("/", methods=["GET"])
+def home():
+    return """
+    <h1>Cashflow Engine ONLINE</h1>
+    <p>Server attivo</p>
+    <form action="/analyze" method="post" enctype="multipart/form-data">
+        <input type="file" name="file">
+        <button type="submit">UPLOAD</button>
+    </form>
+    """
