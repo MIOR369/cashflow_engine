@@ -1,94 +1,67 @@
 <!DOCTYPE html>
-<html lang="it">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Cashflow Engine</title>
 
 <style>
-* {
-    box-sizing: border-box;
-}
-
 body {
-    margin: 0;
-    background: #0f1115;
-    color: #ffffff;
-    font-family: Arial, sans-serif;
+    background:#0f1115;
+    color:#fff;
+    font-family:Arial;
+    text-align:center;
+    padding:40px;
 }
 
 .container {
-    max-width: 800px;
-    margin: auto;
-    padding: 40px 20px;
-}
-
-h1 {
-    text-align: center;
-    margin-bottom: 10px;
-}
-
-.subtitle {
-    text-align: center;
-    opacity: 0.7;
-    margin-bottom: 30px;
+    max-width:800px;
+    margin:auto;
 }
 
 .box {
-    background: #1a1d24;
-    padding: 20px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-}
-
-input, button {
-    width: 100%;
-    padding: 12px;
-    margin-top: 10px;
-    border-radius: 6px;
-    border: none;
+    background:#1a1d24;
+    padding:20px;
+    border-radius:10px;
+    margin:20px 0;
 }
 
 button {
-    background: #63e6be;
-    color: black;
-    font-weight: bold;
-    cursor: pointer;
+    padding:10px 20px;
+    background:#00ff88;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:bold;
 }
 
-button:hover {
-    opacity: 0.9;
+input {
+    margin:10px 0;
 }
 
 #output {
-    white-space: pre-wrap;
-    font-family: monospace;
-    margin-top: 20px;
-    background: #000;
-    padding: 15px;
-    border-radius: 8px;
-    overflow-x: auto;
+    text-align:left;
+    white-space:pre-wrap;
+    margin-top:20px;
 }
 </style>
-
 </head>
+
 <body>
 
 <div class="container">
 
-    <h1>Scopri esattamente dove perdi soldi</h1>
-    <div class="subtitle">Sistema deterministico. Nessuna interpretazione.</div>
+    <h1>💰 Cashflow Decision Engine</h1>
 
     <div class="box">
-        <h3>Analisi completa</h3>
-
         <form id="form">
-            <input type="file" id="file" accept=".csv">
-            <button type="submit">Analizza CSV</button>
+            <input type="file" id="file" accept=".csv"><br>
+            <button type="submit">Analizza</button>
         </form>
+    </div>
 
-        <div id="output"></div>
+    <div class="box">
+        <h3>Risultato</h3>
+        <div id="output">Nessun dato</div>
     </div>
 
 </div>
@@ -100,7 +73,7 @@ document.getElementById("form").onsubmit = async (e) => {
     const fileInput = document.getElementById("file");
 
     if (!fileInput.files.length) {
-        alert("Seleziona un file CSV");
+        alert("Seleziona un file");
         return;
     }
 
@@ -116,7 +89,11 @@ document.getElementById("form").onsubmit = async (e) => {
         const data = await res.json();
 
         document.getElementById("output").innerText =
-            JSON.stringify(data, null, 2);
+            "DIAGNOSI: " + data.diagnosis + "\n\n" +
+            "RISCHIO: " + data.risk + "\n" +
+            "MARGINE: " + data.margin + "\n\n" +
+            "CLIENTE CRITICO: " + data.critical_client + "\n\n" +
+            "AZIONE: " + data.action;
 
     } catch (err) {
         console.error(err);
