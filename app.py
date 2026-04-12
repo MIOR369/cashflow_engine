@@ -8,38 +8,23 @@ app = Flask(__name__)
 
 # === CSV UNIVERSALE NORMALIZER ===
 def normalize_csv(file_path):
-    df = pd.read_csv(file_path)
+    import pandas as pd
 
-    # 🔴 FIX: CSV senza header
-    if df.columns.tolist() == [0,1,2]:
-        df.columns = ["date", "client", "value"]
+    # 🔴 LEGGE SEMPRE SENZA HEADER
+    df = pd.read_csv(file_path, header=None)
 
-    col_map = {}
-
-    for col in df.columns:
-        c = str(col).lower()
-
-        if "date" in c or "data" in c:
-            col_map[col] = "date"
-        elif "client" in c or "cliente" in c or "name" in c:
-            col_map[col] = "client"
-        elif "amount" in c or "value" in c or "valore" in c:
-            col_map[col] = "value"
-
-    df = df.rename(columns=col_map)
-
-    if not all(k in df.columns for k in ["date", "client", "value"]):
+    # 🔴 FORZA STRUTTURA
+    if df.shape[1] < 3:
         raise Exception("Formato CSV non valido")
 
-    df = df[["date", "client", "value"]]
+    df = df.iloc[:, :3]
+    df.columns = ["date", "client", "value"]
 
     temp_path = "normalized.csv"
     df.to_csv(temp_path, index=False, header=False)
 
     return temp_path
 
-
-@app.route("/")
 def home():
     return render_template("index.html")
 
