@@ -67,39 +67,63 @@ input {
 </div>
 
 <script>
-document.getElementById("form").onsubmit = async (e) => {
-    e.preventDefault();
+document.addEventListener("DOMContentLoaded", () => {
 
-    const fileInput = document.getElementById("file");
+    document.getElementById("form").onsubmit = async (e) => {
+        e.preventDefault();
 
-    if (!fileInput.files.length) {
-        alert("Seleziona un file");
-        return;
-    }
+        const fileInput = document.getElementById("file");
 
-    const formData = new FormData();
-    formData.append("file", fileInput.files[0]);
+        if (!fileInput.files.length) {
+            alert("Seleziona un file");
+            return;
+        }
 
-    try {
-        const res = await fetch("/analyze", {
-            method: "POST",
-            body: formData
-        });
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
 
-        const data = await res.json();
+        try {
+            const res = await fetch("/analyze", {
+                method: "POST",
+                body: formData
+            });
 
-        document.getElementById("output").innerText =
-            "DIAGNOSI: " + data.diagnosis + "\n\n" +
-            "RISCHIO: " + data.risk + "\n" +
-            "MARGINE: " + data.margin + "\n\n" +
-            "CLIENTE CRITICO: " + data.critical_client + "\n\n" +
-            "AZIONE: " + data.action;
+            const text = await res.text();
 
-    } catch (err) {
-        console.error(err);
-        alert("Errore richiesta");
-    }
-};
+            console.log("RAW RESPONSE:", text);
+
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch {
+                document.getElementById("output").innerText =
+                    "ERRORE PARSING:\n\n" + text;
+                return;
+            }
+
+            if (data.status === "error") {
+                document.getElementById("output").innerText =
+                    "ERRORE ENGINE:\n\n" +
+                    (data.msg || "unknown") +
+                    "\n\n" +
+                    (data.stderr || "");
+                return;
+            }
+
+            document.getElementById("output").innerText =
+                "DIAGNOSI: " + data.diagnosis + "\n\n" +
+                "RISCHIO: " + data.risk + "\n" +
+                "MARGINE: " + data.margin + "\n\n" +
+                "CLIENTE CRITICO: " + data.critical_client + "\n\n" +
+                "AZIONE: " + data.action;
+
+        } catch (err) {
+            console.error(err);
+            alert("Errore richiesta");
+        }
+    };
+
+});
 </script>
 
 </body>
