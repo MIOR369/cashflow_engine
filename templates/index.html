@@ -1,53 +1,95 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Cashflow Engine</title>
 
 <style>
-body { background:#0f1115; color:#fff; font-family:Arial; text-align:center; padding:40px; }
-.container { max-width:800px; margin:auto; }
-.box { background:#1a1d24; padding:20px; border-radius:10px; margin:20px 0; }
-button { background:#00ffcc; border:none; padding:12px; width:100%; font-weight:bold; cursor:pointer; }
-input, select { width:100%; padding:10px; margin:10px 0; background:#111; color:#fff; border:1px solid #333; }
-.red { color:#ff4d4d; }
-.green { color:#00ffcc; }
-</style>
-</head>
+* {
+    box-sizing: border-box;
+}
 
+body {
+    margin: 0;
+    background: #0f1115;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 40px 20px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    text-align: center;
+    opacity: 0.7;
+    margin-bottom: 30px;
+}
+
+.box {
+    background: #1a1d24;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+input, button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    border-radius: 6px;
+    border: none;
+}
+
+button {
+    background: #63e6be;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+#output {
+    white-space: pre-wrap;
+    font-family: monospace;
+    margin-top: 20px;
+    background: #000;
+    padding: 15px;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+</style>
+
+</head>
 <body>
 
 <div class="container">
 
-<h1>Scopri esattamente dove stai perdendo soldi.</h1>
-<p>E cosa devi fare per smettere.</p>
+    <h1>Scopri esattamente dove perdi soldi</h1>
+    <div class="subtitle">Sistema deterministico. Nessuna interpretazione.</div>
 
-<div class="box">
-<h3>Verifica rapida (senza dati)</h3>
-<select id="rev"><option value="1"><20k</option><option value="2">20-50k</option></select>
-<select id="clients"><option value="1"><10</option><option value="2">10-30</option></select>
-<select id="margin"><option value="1"><10%</option><option value="2">10-20%</option></select>
-<button onclick="mini()">Verifica ora</button>
-<p id="miniResult"></p>
-</div>
+    <div class="box">
+        <h3>Analisi completa</h3>
 
-<div class="box">
-<h3>Analisi completa</h3>
-<input type="file" id="file">
-<button onclick="upload()">Analizza CSV</button>
-<div id="result"></div>
-</div>
+        <form id="form">
+            <input type="file" id="file" accept=".csv">
+            <button type="submit">Analizza CSV</button>
+        </form>
 
-<div class="box">
-<p>Sistema deterministico. Nessuna interpretazione. Solo calcolo reale.</p>
-</div>
-
-<div class="box">
-<p style="font-size:12px;">
-Questo strumento fornisce analisi automatizzate basate sui dati forniti.
-Non costituisce consulenza finanziaria.
-</p>
-</div>
+        <div id="output"></div>
+    </div>
 
 </div>
 
@@ -58,7 +100,7 @@ document.getElementById("form").onsubmit = async (e) => {
     const fileInput = document.getElementById("file");
 
     if (!fileInput.files.length) {
-        alert("Seleziona un file");
+        alert("Seleziona un file CSV");
         return;
     }
 
