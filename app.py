@@ -108,6 +108,7 @@ def analyze():
         file = request.files["file"]
         file_path = "data.csv"
         file.save(file_path)
+    normalized_path = normalize_csv(file_path)
 
         result = subprocess.run(
             ["./cashflow", file_path, "1000"],
@@ -146,3 +147,34 @@ def health():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
     app.run(host="0.0.0.0", port=port)
+
+# === CSV UNIVERSALE NORMALIZER ===
+import pandas as pd
+
+def normalize_csv(file_path):
+    df = pd.read_csv(file_path)
+
+    col_map = {}
+
+    for col in df.columns:
+        c = col.lower()
+
+        if "date" in c or "data" in c:
+            col_map[col] = "date"
+        elif "client" in c or "cliente" in c or "name" in c:
+            col_map[col] = "client"
+        elif "amount" in c or "value" in c or "valore" in c:
+            col_map[col] = "value"
+
+    df = df.rename(columns=col_map)
+
+    if not all(k in df.columns for k in ["date", "client", "value"]):
+        raise Exception("Formato CSV non valido")
+
+    df = df[["date", "client", "value"]]
+
+    temp_path = "normalized.csv"
+    df.to_csv(temp_path, index=False, header=False)
+
+    return temp_path
+
