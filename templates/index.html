@@ -52,30 +52,35 @@ Non costituisce consulenza finanziaria.
 </div>
 
 <script>
-function mini(){
- let loss = Math.floor(Math.random()*20)+5;
- document.getElementById("miniResult").innerHTML =
- "<span class='red'>Probabile perdita: "+loss+"%</span>";
-}
+document.getElementById("form").onsubmit = async (e) => {
+    e.preventDefault();
 
-function upload(){
- let file = document.getElementById("file").files[0];
- let fd = new FormData();
- fd.append("file", file);
+    const fileInput = document.getElementById("file");
 
-fetch("/analyze"
- .then(r=>r.json())
- .then(d=>{
-  document.getElementById("result").innerHTML = `
-  <p class="red">Risk: ${d.risk}%</p>
-  <p>Cliente: ${d.critical_client}</p>
-  <p class="red">Perdita: ${d.margin}€</p>
-  <p>${d.diagnosis}</p>
-  <b>${d.action}</b>
-  `;
- })
- .catch(()=> alert("Errore API"));
-}
+    if (!fileInput.files.length) {
+        alert("Seleziona un file");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+
+    try {
+        const res = await fetch("/analyze", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await res.json();
+
+        document.getElementById("output").innerText =
+            JSON.stringify(data, null, 2);
+
+    } catch (err) {
+        console.error(err);
+        alert("Errore richiesta");
+    }
+};
 </script>
 
 </body>
