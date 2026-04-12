@@ -12,36 +12,23 @@ body {
     text-align:center;
     padding:40px;
 }
-
 .container {
-    max-width:800px;
+    max-width:700px;
     margin:auto;
 }
-
 .box {
     background:#1a1d24;
     padding:20px;
     border-radius:10px;
     margin:20px 0;
 }
-
 button {
-    padding:10px 20px;
-    background:#00ff88;
+    padding:12px 20px;
+    background:#5cd6a0;
     border:none;
     border-radius:6px;
     cursor:pointer;
     font-weight:bold;
-}
-
-input {
-    margin:10px 0;
-}
-
-#output {
-    text-align:left;
-    white-space:pre-wrap;
-    margin-top:20px;
 }
 </style>
 </head>
@@ -50,79 +37,53 @@ input {
 
 <div class="container">
 
-    <h1>💰 Cashflow Decision Engine</h1>
+<h1>💰 Cashflow Decision Engine</h1>
 
-    <div class="box">
-        <form id="form">
-            <input type="file" id="file" accept=".csv"><br>
-            <button type="submit">Analizza</button>
-        </form>
-    </div>
+<div class="box">
+<form id="form">
+<input type="file" id="file" required>
+<br><br>
+<button type="submit">Analizza CSV</button>
+</form>
+</div>
 
-    <div class="box">
-        <h3>Risultato</h3>
-        <div id="output">Nessun dato</div>
-    </div>
+<div class="box">
+<h2>Risultato</h2>
+<pre id="output">---</pre>
+</div>
 
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
+document.getElementById("form").onsubmit = async (e) => {
+    e.preventDefault();
 
-    document.getElementById("form").onsubmit = async (e) => {
-        e.preventDefault();
+    const fileInput = document.getElementById("file");
 
-        const fileInput = document.getElementById("file");
+    if (!fileInput.files.length) {
+        alert("Seleziona un file");
+        return;
+    }
 
-        if (!fileInput.files.length) {
-            alert("Seleziona un file");
-            return;
-        }
+    const formData = new FormData();
+    formData.append("file", fileInput.files[0]);
 
-        const formData = new FormData();
-        formData.append("file", fileInput.files[0]);
+    try {
+        const res = await fetch("/analyze", {
+            method: "POST",
+            body: formData
+        });
 
-        try {
-            const res = await fetch("/analyze", {
-                method: "POST",
-                body: formData
-            });
+        const data = await res.json();
 
-            const data = await res.json();
+        document.getElementById("output").innerText =
+            JSON.stringify(data, null, 2);
 
-            console.log("DATA:", data);
-
-            // 🔴 SE ERRORE BACKEND
-            if (data.status === "error") {
-                document.getElementById("output").innerText =
-                    "ERRORE ENGINE:\n\n" +
-                    (data.msg || "unknown") +
-                    "\n\n" +
-                    (data.stderr || "");
-                return;
-            }
-
-            // ✅ SAFE READ
-            const diagnosis = data.diagnosis || "N/A";
-            const risk = data.risk || "N/A";
-            const margin = data.margin || "N/A";
-            const client = data.critical_client || "N/A";
-            const action = data.action || "N/A";
-
-            document.getElementById("output").innerText =
-                "DIAGNOSI: " + diagnosis + "\n\n" +
-                "RISCHIO: " + risk + "\n" +
-                "MARGINE: " + margin + "\n\n" +
-                "CLIENTE CRITICO: " + client + "\n\n" +
-                "AZIONE: " + action;
-
-        } catch (err) {
-            console.error(err);
-            alert("Errore richiesta");
-        }
-    };
-
-});
+    } catch (err) {
+        console.error(err);
+        alert("Errore richiesta");
+    }
+};
 </script>
 
 </body>
