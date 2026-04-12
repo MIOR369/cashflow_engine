@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Cashflow Engine</title>
+
+<style>
+body { background:#0f1115; color:#fff; font-family:Arial; text-align:center; padding:40px; }
+.container { max-width:800px; margin:auto; }
+.box { background:#1a1d24; padding:20px; border-radius:10px; margin:20px 0; }
+button { background:#00ffcc; border:none; padding:12px; width:100%; font-weight:bold; cursor:pointer; }
+input, select { width:100%; padding:10px; margin:10px 0; background:#111; color:#fff; border:1px solid #333; }
+.red { color:#ff4d4d; }
+.green { color:#00ffcc; }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Scopri esattamente dove stai perdendo soldi.</h1>
+<p>E cosa devi fare per smettere.</p>
+
+<div class="box">
+<h3>Verifica rapida (senza dati)</h3>
+<select id="rev"><option value="1"><20k</option><option value="2">20-50k</option></select>
+<select id="clients"><option value="1"><10</option><option value="2">10-30</option></select>
+<select id="margin"><option value="1"><10%</option><option value="2">10-20%</option></select>
+<button onclick="mini()">Verifica ora</button>
+<p id="miniResult"></p>
+</div>
+
+<div class="box">
+<h3>Analisi completa</h3>
+<input type="file" id="file">
+<button onclick="upload()">Analizza CSV</button>
+<div id="result"></div>
+</div>
+
+<div class="box">
+<p>Sistema deterministico. Nessuna interpretazione. Solo calcolo reale.</p>
+</div>
+
+<div class="box">
+<p style="font-size:12px;">
+Questo strumento fornisce analisi automatizzate basate sui dati forniti.
+Non costituisce consulenza finanziaria.
+</p>
+</div>
+
+</div>
+
+<script>
+function mini(){
+ let loss = Math.floor(Math.random()*20)+5;
+ document.getElementById("miniResult").innerHTML =
+ "<span class='red'>Probabile perdita: "+loss+"%</span>";
+}
+
+function upload(){
+ let file = document.getElementById("file").files[0];
+ let fd = new FormData();
+ fd.append("file", file);
+
+ fetch("http://127.0.0.1:5001/analyze", { method:"POST", body:fd })
+ .then(r=>r.json())
+ .then(d=>{
+  document.getElementById("result").innerHTML = `
+  <p class="red">Risk: ${d.risk}%</p>
+  <p>Cliente: ${d.critical_client}</p>
+  <p class="red">Perdita: ${d.margin}€</p>
+  <p>${d.diagnosis}</p>
+  <b>${d.action}</b>
+  `;
+ })
+ .catch(()=> alert("Errore API"));
+}
+</script>
+
+</body>
+</html>
