@@ -3,10 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <title>Cashflow Engine</title>
+
 <style>
 body { background:#0f1115; color:#fff; font-family:Arial; text-align:center; padding:40px; }
 .box { background:#1a1d24; padding:20px; border-radius:10px; margin:20px auto; max-width:700px; }
-button { padding:10px 20px; border:none; border-radius:8px; background:#6ee7b7; cursor:pointer; }
+button { padding:12px 24px; border:none; border-radius:8px; background:#6ee7b7; cursor:pointer; font-weight:bold; }
 pre { text-align:left; white-space:pre-wrap; }
 </style>
 </head>
@@ -29,31 +30,56 @@ pre { text-align:left; white-space:pre-wrap; }
 <script>
 async function send() {
     const fileInput = document.getElementById("file");
+    const output = document.getElementById("output");
 
     if (!fileInput.files.length) {
         alert("Seleziona file");
         return;
     }
 
+    output.innerText = "⏳ Elaborazione...";
+
     const formData = new FormData();
     formData.append("file", fileInput.files[0]);
 
-    const res = await fetch("/analyze", {
-        method: "POST",
-        body: formData
-    });
+    try {
+        const res = await fetch("/analyze", {
+            method: "POST",
+            body: formData
+        });
 
-    const data = await res.json();
+        const data = await res.json();
 
-    if (data.raw) {
-        document.getElementById("output").innerText = data.raw;
-    } else {
-        document.getElementById("output").innerText =
-            "DIAGNOSIS: " + data.diagnosis + "\n" +
-            "RISK: " + data.risk + "\n" +
-            "MARGIN: " + data.margin + "\n" +
-            "CRITICAL CLIENT: " + data.critical_client + "\n" +
-            "ACTION: " + data.action;
+        console.log("DEBUG:", data);
+
+        // 🔴 CASO ERRORE
+        if (data.status === "error") {
+            output.innerText = "❌ ERRORE:\n" + JSON.stringify(data, null, 2);
+            return;
+        }
+
+        // 🔴 CASO OUTPUT RAW (C++)
+        if (data.raw) {
+            output.innerText = data.raw;
+            return;
+        }
+
+        // 🔴 CASO JSON CORRETTO
+        if (data.diagnosis) {
+            output.innerText =
+                "DIAGNOSIS: " + data.diagnosis + "\n\n" +
+                "RISK: " + data.risk + "\n" +
+                "MARGIN: " + data.margin + "\n" +
+                "CRITICAL CLIENT: " + data.critical_client + "\n\n" +
+                "ACTION: " + data.action;
+            return;
+        }
+
+        // 🔴 FALLBACK
+        output.innerText = "⚠️ OUTPUT NON RICONOSCIUTO:\n" + JSON.stringify(data, null, 2);
+
+    } catch (err) {
+        output.innerText = "❌ ERRORE FETCH:\n" + err;
     }
 }
 </script>
