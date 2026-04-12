@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from flask_login import LoginManager, UserMixin, login_user
 from flask_sqlalchemy import SQLAlchemy
@@ -38,6 +38,13 @@ class User(UserMixin, db.Model):
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
+
+# ======================
+# HOME (CRITICO)
+# ======================
+@app.route("/")
+def home():
+    return render_template("index.html")
 
 # ======================
 # REGISTER
@@ -102,7 +109,6 @@ def analyze():
         file_path = "data.csv"
         file.save(file_path)
 
-        # run C++ engine
         result = subprocess.run(
             ["./cashflow", file_path, "1000"],
             capture_output=True,
@@ -128,14 +134,14 @@ def analyze():
         return {"status": "error", "msg": str(e)}, 500
 
 # ======================
-# HEALTH CHECK (IMPORTANTE)
+# HEALTH CHECK
 # ======================
 @app.route("/healthz")
 def health():
     return {"status": "ok"}
 
 # ======================
-# RUN (RENDER FIX)
+# RUN (RENDER)
 # ======================
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
