@@ -88,19 +88,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: formData
             });
 
-            const text = await res.text();
+            const data = await res.json();
 
-            console.log("RAW RESPONSE:", text);
+            console.log("DATA:", data);
 
-            let data;
-            try {
-                data = JSON.parse(text);
-            } catch {
-                document.getElementById("output").innerText =
-                    "ERRORE PARSING:\n\n" + text;
-                return;
-            }
-
+            // 🔴 SE ERRORE BACKEND
             if (data.status === "error") {
                 document.getElementById("output").innerText =
                     "ERRORE ENGINE:\n\n" +
@@ -110,12 +102,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
+            // ✅ SAFE READ
+            const diagnosis = data.diagnosis || "N/A";
+            const risk = data.risk || "N/A";
+            const margin = data.margin || "N/A";
+            const client = data.critical_client || "N/A";
+            const action = data.action || "N/A";
+
             document.getElementById("output").innerText =
-                "DIAGNOSI: " + data.diagnosis + "\n\n" +
-                "RISCHIO: " + data.risk + "\n" +
-                "MARGINE: " + data.margin + "\n\n" +
-                "CLIENTE CRITICO: " + data.critical_client + "\n\n" +
-                "AZIONE: " + data.action;
+                "DIAGNOSI: " + diagnosis + "\n\n" +
+                "RISCHIO: " + risk + "\n" +
+                "MARGINE: " + margin + "\n\n" +
+                "CLIENTE CRITICO: " + client + "\n\n" +
+                "AZIONE: " + action;
 
         } catch (err) {
             console.error(err);
