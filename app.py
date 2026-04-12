@@ -49,30 +49,38 @@ def home():
 # ======================
 # REGISTER
 # ======================
-@app.route("/register", methods=["POST"])
-def register():
+@app.route("/analyze", methods=["POST"])
+def analyze():
     try:
-        data = request.json
+        file = request.files['file']
 
-        if not data or "username" not in data or "password" not in data:
-            return {"status": "error", "msg": "invalid input"}, 400
+        file_path = "input.csv"
+        file.save(file_path)
 
-        existing = User.query.filter_by(username=data["username"]).first()
-        if existing:
-            return {"status": "error", "msg": "user exists"}, 400
+        normalized_path = normalize_csv(file_path)
 
-        user = User(
-            username=data["username"],
-            password=data["password"]
+        import subprocess
+        result = subprocess.run(
+            ["./cashflow", normalized_path],
+            capture_output=True,
+            text=True
         )
 
-        db.session.add(user)
-        db.session.commit()
+        if result.returncode != 0:
+            return jsonify({
+                "status": "error",
+                "msg": "engine failed",
+                "stderr": result.stderr
+            })
 
-        return {"status": "created"}
+        import json
+        return jsonify(json.loads(result.stdout))
 
     except Exception as e:
-        return {"status": "error", "msg": str(e)}, 500
+        return jsonify({
+            "status": "error",
+            "msg": str(e)
+        })
 
 # ======================
 # LOGIN
