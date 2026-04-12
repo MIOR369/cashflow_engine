@@ -63,7 +63,7 @@ function upload(){
  let fd = new FormData();
  fd.append("file", file);
 
- fetch("http://127.0.0.1:5001/analyze", { method:"POST", body:fd })
+fetch("https://cashflow-engine.onrender.com/analyze", {
  .then(r=>r.json())
  .then(d=>{
   document.getElementById("result").innerHTML = `
