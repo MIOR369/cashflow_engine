@@ -28,6 +28,18 @@ db = SQLAlchemy(app)
 limiter = Limiter(get_remote_address, app=app, default_limits=[])
 login_manager = LoginManager(app)
 
+def get_user_from_token(token):
+    if not token:
+        return None
+    import hashlib
+    for u in User.query.all():
+        expected = hashlib.sha256(f"{u.id}-{u.email}-diagn-eco-2026".encode()).hexdigest()
+        if expected == token:
+            return u
+    return None
+
+
+
 class User(UserMixin, db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
