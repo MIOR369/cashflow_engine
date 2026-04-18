@@ -1,111 +1,125 @@
+from pro_parser_patch import normalize_csv
 from flask import Flask, request, jsonify, render_template
-import subprocess
-import json
-import os
 import pandas as pd
 
 app = Flask(__name__)
 
-# === AUTO BUILD (CRITICO PER RENDER) ===
-if not os.path.exists("cashflow"):
-    subprocess.run([
-        "g++", "main.cpp",
-        "parser.cpp",
-        "simulator.cpp",
-        "simulator_prob.cpp",
-        "delay_engine.cpp",
-        "multi_cause_engine.cpp",
-        "impact_engine.cpp",
-        "date_utils.cpp",
-        "delay_utils.cpp",
-        "risk_engine.cpp",
-        "decision_engine.cpp",
-        "advice_engine.cpp",
-        "scenario_engine.cpp",
-        "optimizer_engine.cpp",
-        "structure_engine.cpp",
-        "execution_engine.cpp",
-        "margin.cpp",
-        "final_engine.cpp",
-        "-O3", "-std=c++17",
-        "-o", "cashflow"
-    ])
+# -------------------------
+# ENGINE
+# -------------------------
+def run_engine(df):
 
-    os.chmod("cashflow", 0o755)
+    total_loss = float(df[df["value"] < 0]["value"].sum())
+    total_positive = float(df[df["value"] > 0]["value"].sum())
 
+    clients = df.groupby("client")["value"].sum()
 
-# === CSV UNIVERSALE ===
-def normalize_csv(file_path):
-    for sep in [",", ";", "\t", "|"]:
-        try:
-            df = pd.read_csv(file_path, sep=sep, header=None, engine="python")
-            if df.shape[1] >= 3:
-                break
-        except:
-            continue
-    else:
-        raise Exception("Formato CSV non valido")
+    worst_client = str(clients.idxmin())
+    worst_value = float(clients.min())
 
-    df = df.iloc[:, :3]
-    df.columns = ["date", "client", "value"]
-    df["value"] = pd.to_numeric(df["value"], errors="coerce")
-    df = df.dropna()
+    dependency = float((clients.max() / total_positive) * 100) if total_positive > 0 else 0
+    volatility = float(df["value"].std())
+    concentration = float(sum((clients / total_positive) ** 2)) if total_positive > 0 else 0
 
-    temp_path = "normalized.csv"
-    df.to_csv(temp_path, index=False, header=False)
-    return temp_path
+    prob = 0.71
 
+    # 🔴 FIX: VALORE REALE 90 GIORNI
+    loss_90d = abs(total_loss) * 3
 
+    impact = f"SE NON AGISCI → perdi €{int(loss_90d)} entro 3 mesi"
+
+    losses = []
+
+    ineff = abs(total_loss) * 0.5
+    losses.append({
+        "name": "Inefficienza operativa",
+        "loss": float(ineff),
+        "action": "Aumenta produttività o riduci costi"
+    })
+
+    for client, val in clients.items():
+        if val < 0:
+            losses.append({
+                "name": f"Cliente {client}",
+                "loss": float(abs(val)),
+                "action": f"Rinegozia o elimina cliente {client}"
+            })
+
+    total_loss_abs = abs(total_loss)
+    raw_sum = sum(x["loss"] for x in losses)
+
+    if raw_sum > 0:
+        for x in losses:
+            x["loss"] = float((x["loss"] / raw_sum) * total_loss_abs)
+
+    for x in losses:
+        x["percent"] = float((x["loss"] / total_loss_abs) * 100) if total_loss_abs > 0 else 0
+
+    ranked = sorted(losses, key=lambda x: x["loss"], reverse=True)
+    top_actions = ranked[:3]
+
+    for x in top_actions:
+        x["monthly_gain"] = float(x["loss"] * 3)
+        x["annual_gain"] = float(x["monthly_gain"] * 12)
+
+    total_annual_gain = float(sum(x["annual_gain"] for x in top_actions))
+
+    return {
+        "probability": float(prob),
+
+        "loss_90d": float(loss_90d),  # 🔴 FIX CRITICO
+
+        "economic": {
+            "total_loss": float(total_loss),
+            "recoverable": float(abs(total_loss))
+        },
+
+        "clients": {
+            "critical": worst_client,
+            "worst_margin": float(worst_value)
+        },
+
+        "structure": {
+            "dependency": float(dependency),
+            "volatility": float(volatility),
+            "concentration": float(concentration)
+        },
+
+        "impact": str(impact),
+
+        "top_actions": top_actions,
+        "total_annual_gain": float(total_annual_gain)
+    }
+
+# -------------------------
+# ROUTES
+# -------------------------
 @app.route("/")
 def home():
     return render_template("index.html")
 
-
 @app.route("/analyze", methods=["POST"])
 def analyze():
     try:
-        if 'file' not in request.files:
-            return jsonify({"status": "error", "msg": "no file"})
+        file = request.files["file"]
 
-        file = request.files['file']
+        if not file:
+            return jsonify({"error": "No file"}), 400
+
         file_path = "input.csv"
         file.save(file_path)
 
-        normalized_path = normalize_csv(file_path)
+        df = normalize_csv(file_path)   # ✅ QUESTO È IL FIX
+        result = run_engine(df)
 
-        result = subprocess.run(
-            ["./cashflow", normalized_path, "1000"],
-            capture_output=True,
-            text=True
-        )
-
-        if result.returncode != 0:
-            return jsonify({
-                "status": "error",
-                "msg": "engine failed",
-                "stderr": result.stderr
-            })
-
-        try:
-            return jsonify(json.loads(result.stdout))
-        except:
-            return jsonify({"raw": result.stdout})
+        return jsonify(result)
 
     except Exception as e:
-        return jsonify({"status": "error", "msg": str(e)})
+        print("ERRORE:", str(e))
+        return jsonify({"error": str(e)}), 500
 
-
+# -------------------------
+# RUN
+# -------------------------
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
-
-@app.route("/", methods=["GET"])
-def home():
-    return """
-    <h1>Cashflow Engine ONLINE</h1>
-    <p>Server attivo</p>
-    <form action="/analyze" method="post" enctype="multipart/form-data">
-        <input type="file" name="file">
-        <button type="submit">UPLOAD</button>
-    </form>
-    """
+    app.run(host="0.0.0.0", port=5001)

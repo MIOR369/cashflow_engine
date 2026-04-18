@@ -1,7 +1,7 @@
 {
-"risk": 21,
+"risk": 0.4,
 "critical_client": "C",
-"margin": -900,
-"diagnosis": "HIGH RISK: multiple loss-making clients + cash instability",
-"action": "Eliminate or renegotiate top loss-making clients"
+"margin": -1200,
+"diagnosis": "MARGIN LOSS: multiple unprofitable clients",
+"action": "Fix pricing or remove worst clients"
 }

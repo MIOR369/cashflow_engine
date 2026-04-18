@@ -1,0 +1,38 @@
+<script>
+let html = "";
+
+// ---- TOP ACTIONS ----
+data.top_actions.forEach((x, i) => {
+
+  let priority = i === 0 ? "🔥 PRIORITÀ MASSIMA" : "";
+
+  html += `
+  <div style="margin-bottom:15px">
+    <p>
+      ${priority}<br>
+      + €${x.loss.toFixed(0)} (${x.percent.toFixed(0)}%)<br>
+      → ${x.action}<br>
+      <b>+€${x.monthly_gain.toFixed(0)}/mese | +€${x.annual_gain.toFixed(0)}/anno</b>
+    </p>
+  </div>
+  `;
+});
+
+// ---- TOTALE ----
+html += `
+<h2>💰 GUADAGNO ANNUO TOTALE: €${data.total_annual_gain.toFixed(0)}</h2>
+`;
+
+// ---- OUTPUT HARDCORE ----
+html += `
+<h3>⚠️ DECISIONE</h3>
+<p>
+Se esegui queste azioni:<br>
+→ +€${data.total_annual_gain.toFixed(0)} / anno<br>
+→ +€${(data.total_annual_gain/12).toFixed(0)} / mese<br>
+→ Rischio attuale: ${data.status}
+</p>
+`;
+
+document.getElementById("actions").innerHTML = html;
+</script>
