@@ -312,12 +312,18 @@ async function doAuth(){
   try{
     var res=await fetch('/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})});
     var d=await res.json();
-    if(d.status==='ok'){currentUser=d;updateUI();document.getElementById('authBox').style.display='none';}
+    if(d.status==='ok'){
+      currentUser=d;
+      if(d.token) localStorage.setItem('diagn_token',d.token);
+      updateUI();
+      document.getElementById('authBox').style.display='none';
+    }
   }catch(e){alert('Errore: '+e.message)}
 }
 
 async function doLogout(){
   await fetch('/logout');
+  localStorage.removeItem('diagn_token');
   currentUser=null;
   document.getElementById('navEmail').textContent='non autenticato';
   document.getElementById('navLevel').textContent='';
@@ -329,9 +335,12 @@ async function doLogout(){
 
 async function loadMe(){
   try{
-    var res=await fetch('/me');
+    var token=localStorage.getItem('diagn_token');
+    var headers={};
+    if(token) headers['X-User-Token']=token;
+    var res=await fetch('/me',{headers:headers});
     var d=await res.json();
-    if(d.status==='ok'){currentUser=d;updateUI();document.getElementById('authBox').style.display='none';}
+    if(d.status==='ok'){currentUser=d;currentUser.token=token;updateUI();document.getElementById('authBox').style.display='none';}
   }catch(e){}
 }
 
@@ -360,7 +369,10 @@ async function unlock(tier){
     alert('Inserisci prima la tua email.');return;
   }
   try{
-    var res=await fetch('/create-checkout-session/'+tier);
+    var token=localStorage.getItem('diagn_token');
+    var headers={};
+    if(token) headers['X-User-Token']=token;
+    var res=await fetch('/create-checkout-session/'+tier,{headers:headers});
     var d=await res.json();
     if(d.status==='ok'&&d.url){window.location.href=d.url;}
     else{alert('Errore: '+(d.msg||'riprova'));}
@@ -374,7 +386,10 @@ async function analyze(){
   document.getElementById('loading').style.display='block';
   document.getElementById('dashboard').innerHTML='';
   try{
-    var res=await fetch('/analyze',{method:'POST',body:fd});
+    var token=localStorage.getItem('diagn_token');
+    var headers={};
+    if(token) headers['X-User-Token']=token;
+    var res=await fetch('/analyze',{method:'POST',body:fd,headers:headers});
     var text=await res.text();
     document.getElementById('loading').style.display='none';
     var d;
