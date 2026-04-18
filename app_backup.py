@@ -163,7 +163,7 @@ def analyze():
             os.remove("data.csv")
             return {"status": "error", "msg": "file troppo grande (max 2MB)"}, 413
         normalized_path = normalize_csv("data.csv")
-        result = subprocess.run(["./cashflow", normalized_path, "1000"], capture_output=True, text=True, timeout=15)
+        result = subprocess.run(["./cashflow" if __import__("os").path.exists("./cashflow") else "/opt/render/project/src/cashflow", normalized_path, "1000"], capture_output=True, text=True, timeout=15)
         if result.returncode != 0:
             return {"status": "error", "msg": "engine failed", "stderr": result.stderr}, 500
         full_data = json.loads(result.stdout)
