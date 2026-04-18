@@ -15,8 +15,9 @@ app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024
 
 CORS(app, supports_credentials=True)
 app.config["SESSION_COOKIE_HTTPONLY"] = True
-app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
-app.config["SESSION_COOKIE_SECURE"] = False  # True solo con HTTPS in produzione
+app.config["SESSION_COOKIE_SAMESITE"] = "None"
+app.config["SESSION_PERMANENT"] = True
+app.config["SESSION_COOKIE_SECURE"] = True
 db = SQLAlchemy(app)
 limiter = Limiter(get_remote_address, app=app, default_limits=[])
 login_manager = LoginManager(app)
