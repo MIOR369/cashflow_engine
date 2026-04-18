@@ -20,6 +20,10 @@ app.config["SESSION_PERMANENT"] = True
 app.config["PERMANENT_SESSION_LIFETIME"] = 86400 * 30
 app.config["SESSION_COOKIE_SECURE"] = True
 app.config["SESSION_COOKIE_DOMAIN"] = None
+app.config["REMEMBER_COOKIE_SECURE"] = True
+app.config["REMEMBER_COOKIE_HTTPONLY"] = True
+app.config["REMEMBER_COOKIE_SAMESITE"] = "Lax"
+app.config["REMEMBER_COOKIE_DURATION"] = 86400 * 30
 db = SQLAlchemy(app)
 limiter = Limiter(get_remote_address, app=app, default_limits=[])
 login_manager = LoginManager(app)
@@ -143,7 +147,7 @@ def auth():
             user = User(email=email, access_level=0)
             db.session.add(user)
             db.session.commit()
-        login_user(user, remember=True)
+        login_user(user, remember=True, duration=__import__('datetime').timedelta(days=30))
         return {"status": "ok", "user_id": user.id, "access_level": user.access_level, "email": user.email}
     except Exception as e:
         return {"status": "error", "msg": str(e)}, 500
