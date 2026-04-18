@@ -224,3 +224,40 @@ def health():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5001)))
+
+
+@app.route('/create-checkout-session', methods=['POST'])
+def create_checkout():
+    data = request.get_json()
+    tier = data.get("tier")
+
+    token = request.headers.get('X-User-Token')
+    user = get_user_from_token(token)
+
+    if not user:
+        return {"status": "error", "msg": "non autenticato"}, 401
+
+    if tier not in ["base", "full"]:
+        return {"status": "error", "msg": "tier non valido"}, 400
+
+    import stripe as stripe_lib
+    import os
+
+    stripe_lib.api_key = os.environ.get("STRIPE_SECRET_KEY")
+
+    price_id = (
+        "price_XXXXXXXX_BASE" if tier == "base"
+        else "price_XXXXXXXX_FULL"
+    )
+
+    checkout = stripe_lib.checkout.Session.create(
+        payment_method_types=["card"],
+        line_items=[{"price": price_id, "quantity": 1}],
+        mode="payment",
+        success_url="https://diagn-eco.onrender.com/success",
+        cancel_url="https://diagn-eco.onrender.com/",
+        metadata={"user_id": user.id, "tier": tier}
+    )
+
+    return {"status": "ok", "url": checkout.url}
+
