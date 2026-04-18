@@ -148,7 +148,10 @@ def auth():
             db.session.add(user)
             db.session.commit()
         login_user(user, remember=True, duration=__import__('datetime').timedelta(days=30))
-        return {"status": "ok", "user_id": user.id, "access_level": user.access_level, "email": user.email}
+        # Genera token semplice per produzione
+        import hashlib
+        token = hashlib.sha256(f"{user.id}-{user.email}-diagn-eco-2026".encode()).hexdigest()
+        return {"status": "ok", "user_id": user.id, "access_level": user.access_level, "email": user.email, "token": token}
     except Exception as e:
         return {"status": "error", "msg": str(e)}, 500
 
@@ -174,7 +177,15 @@ def analyze():
         if result.returncode != 0:
             return {"status": "error", "msg": "engine failed", "stderr": result.stderr}, 500
         full_data = json.loads(result.stdout)
-        access_level = current_user.access_level if current_user.is_authenticated else 0
+        # Prova prima con token header (per produzione), poi con sessione
+        token = request.headers.get('X-User-Token')
+        token_user = get_user_from_token(token)
+        if token_user:
+            access_level = token_user.access_level
+        elif current_user.is_authenticated:
+            access_level = current_user.access_level
+        else:
+            access_level = 0
         return jsonify(filter_output(full_data, access_level))
     except subprocess.TimeoutExpired:
         return {"status": "error", "msg": "analisi troppo lunga"}, 504
