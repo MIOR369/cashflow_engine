@@ -4,504 +4,308 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DiagnEco — Diagnosi Economica per PMI Impiantistiche</title>
+<script src="https://cdn.tailwindcss.com"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#020617;color:#e2e8f0;min-height:100vh}
-
-/* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(2,6,23,0.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.06);padding:16px 40px;display:flex;justify-content:space-between;align-items:center}
-.logo{font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.5px}
-.logo span{color:#3b82f6}
-.nav-right{display:flex;align-items:center;gap:16px;font-size:13px}
-.nav-user{color:#64748b}
-.nav-level{font-weight:700;color:#3b82f6}
-.btn-logout{background:none;border:1px solid rgba(255,255,255,0.1);color:#64748b;padding:6px 14px;border-radius:7px;cursor:pointer;font-size:12px;display:none}
-.btn-logout:hover{border-color:rgba(255,255,255,0.3);color:#e2e8f0}
-
-/* HERO */
-.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:120px 24px 80px;position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:800px;height:800px;background:radial-gradient(circle,rgba(59,130,246,0.12) 0%,transparent 70%);pointer-events:none}
-.hero-badge{display:inline-block;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);color:#3b82f6;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:28px}
-.hero h1{font-size:52px;font-weight:800;line-height:1.1;letter-spacing:-1.5px;max-width:700px;margin-bottom:20px}
-.hero h1 span{color:#3b82f6}
-.hero p{font-size:18px;color:#64748b;max-width:520px;line-height:1.6;margin-bottom:40px}
-.hero-cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
-.btn-primary{background:linear-gradient(135deg,#3b82f6,#1d4ed8);border:none;padding:14px 32px;color:white;border-radius:10px;font-weight:700;cursor:pointer;font-size:15px}
-.btn-primary:hover{opacity:0.9}
-.btn-secondary{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);padding:14px 32px;color:#e2e8f0;border-radius:10px;font-weight:600;cursor:pointer;font-size:15px}
-.btn-secondary:hover{background:rgba(255,255,255,0.08)}
-
-/* PROBLEMA */
-.section{padding:100px 40px;max-width:1100px;margin:0 auto}
-.section-label{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#3b82f6;font-weight:700;margin-bottom:16px}
-.section h2{font-size:38px;font-weight:800;letter-spacing:-1px;margin-bottom:16px;line-height:1.2}
-.section p{color:#64748b;font-size:16px;line-height:1.7;max-width:600px}
-
-/* NUMERI */
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:60px}
-.stat-card{background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:32px;text-align:center}
-.stat-number{font-size:48px;font-weight:800;color:#ef4444;line-height:1}
-.stat-label{font-size:14px;color:#64748b;margin-top:10px}
-
-/* COME FUNZIONA */
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:60px}
-.step{background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:28px}
-.step-num{width:36px;height:36px;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#3b82f6;margin-bottom:16px}
-.step h3{font-size:16px;font-weight:700;margin-bottom:8px}
-.step p{font-size:13px;color:#64748b;line-height:1.6}
-
-/* PREZZI */
-.pricing{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:60px}
-.price-card{background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:32px;position:relative}
-.price-card.featured{border-color:rgba(59,130,246,0.4);background:rgba(59,130,246,0.05)}
-.price-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#3b82f6;color:white;padding:4px 16px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
-.price-tier{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:600;margin-bottom:12px}
-.price-amount{font-size:42px;font-weight:800;line-height:1;margin-bottom:6px}
-.price-amount span{font-size:16px;font-weight:400;color:#64748b}
-.price-desc{font-size:13px;color:#64748b;margin-bottom:24px;line-height:1.5}
-.price-features{list-style:none;display:flex;flex-direction:column;gap:10px}
-.price-features li{font-size:13px;color:#94a3b8;display:flex;align-items:flex-start;gap:8px}
-.price-features li::before{content:'✓';color:#22c55e;font-weight:700;flex-shrink:0}
-.price-features li.locked{color:#475569}
-.price-features li.locked::before{content:'🔒';font-size:11px}
-
-/* TARGET */
-.target-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:48px}
-.target-card{background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:24px}
-.target-icon{font-size:28px;margin-bottom:12px}
-.target-card h3{font-size:15px;font-weight:700;margin-bottom:6px}
-.target-card p{font-size:13px;color:#64748b;line-height:1.5}
-
-/* TOOL */
-.tool-section{background:rgba(15,23,42,0.5);border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06);padding:80px 40px}
-.tool-inner{max-width:900px;margin:0 auto}
-.tool-header{text-align:center;margin-bottom:40px}
-.upload-zone{background:rgba(255,255,255,0.03);border:1px dashed rgba(255,255,255,0.12);border-radius:14px;padding:24px 28px;display:flex;align-items:center;gap:14px;margin-bottom:20px}
-input[type=file]{color:#64748b;font-size:13px;flex:1}
-.btn-analyze{background:linear-gradient(135deg,#3b82f6,#1d4ed8);border:none;padding:12px 28px;color:white;border-radius:9px;font-weight:700;cursor:pointer;font-size:14px;white-space:nowrap}
-.auth-zone{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:18px 22px;display:flex;gap:12px;align-items:center;margin-bottom:16px}
-.auth-zone input{flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 14px;color:#e2e8f0;font-size:13px}
-.auth-zone input::placeholder{color:#475569}
-.btn-auth{background:rgba(59,130,246,0.2);border:1px solid rgba(59,130,246,0.3);color:#3b82f6;padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px;white-space:nowrap}
-
-/* DASHBOARD */
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
-.card{background:rgba(15,23,42,0.85);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px}
-.card.full{grid-column:1/-1}
-.card.red{border-color:rgba(239,68,68,0.35);background:rgba(239,68,68,0.06)}
-.card.yellow{border-color:rgba(234,179,8,0.35);background:rgba(234,179,8,0.05)}
-.card.green{border-color:rgba(34,197,94,0.35);background:rgba(34,197,94,0.05)}
-.lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:#475569;margin-bottom:6px}
-.big{font-size:34px;font-weight:800;line-height:1}
-.big.r{color:#ef4444}.big.y{color:#eab308}.big.g{color:#22c55e}
-.sub{font-size:12px;color:#475569;margin-top:4px}
-.bar-bg{background:rgba(255,255,255,0.05);border-radius:99px;height:4px;margin-top:6px}
-.bar{height:4px;border-radius:99px;width:0;transition:width 0.8s ease}
-.divider{border:none;border-top:1px solid rgba(255,255,255,0.05);margin:12px 0}
-.krow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
-.krow:last-child{border-bottom:none}
-.kn{font-size:12px;color:#64748b}.kv{font-size:13px;font-weight:700}
-.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;margin-right:5px}
-.br{background:rgba(239,68,68,0.15);color:#ef4444}
-.by{background:rgba(234,179,8,0.15);color:#eab308}
-.bg{background:rgba(34,197,94,0.15);color:#22c55e}
-.crow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
-.crow:last-child{border-bottom:none}
-.lock-overlay{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;gap:10px;text-align:center}
-.lock-icon{font-size:24px}
-.lock-text{font-size:12px;color:#475569}
-.level-banner{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:12px 18px;margin-bottom:16px;font-size:12px;color:#94a3b8;display:none}
-.level-banner strong{color:#3b82f6}
-#loading{display:none;color:#475569;font-size:13px;padding:14px 0;text-align:center}
-
-/* FOOTER */
-footer{padding:48px 40px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;color:#475569;font-size:13px}
-footer strong{color:#94a3b8}
-
-@media(max-width:768px){
-  .hero h1{font-size:32px}
-  .stats,.steps,.pricing,.target-grid{grid-template-columns:1fr}
-  .grid2{grid-template-columns:1fr}
-  nav{padding:16px 20px}
-  .section{padding:60px 20px}
-}
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+  * { font-family: 'Inter', sans-serif; }
+  .counter { font-variant-numeric: tabular-nums; }
+  @keyframes pulse-red { 0%,100%{opacity:1} 50%{opacity:.6} }
+  .pulse-red { animation: pulse-red 2s infinite; }
+  @keyframes fadeup { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  .fadeup { animation: fadeup 0.5s ease forwards; }
+  .blur-overlay { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
 </style>
 </head>
-<body>
+<body class="bg-[#020617] text-white min-h-screen">
 
 <!-- NAV -->
-<nav>
-  <div class="logo">Diagn<span>Eco</span></div>
-  <div class="nav-right">
-    <span class="nav-user" id="navEmail">non autenticato</span>
-    <span class="nav-level" id="navLevel"></span>
-    <button class="btn-logout" id="logoutBtn" onclick="doLogout()">Esci</button>
+<nav class="fixed top-0 left-0 right-0 z-50 bg-[#020617]/90 backdrop-blur border-b border-white/5 px-6 py-4 flex justify-between items-center">
+  <div class="text-lg font-black tracking-tight">Diagn<span class="text-blue-500">Eco</span></div>
+  <div class="flex items-center gap-3 text-sm">
+    <span id="navEmail" class="text-slate-400"></span>
+    <span id="navLevel" class="font-bold text-blue-400 text-xs uppercase tracking-widest"></span>
+    <button id="logoutBtn" onclick="doLogout()" class="hidden text-xs text-slate-500 border border-white/10 px-3 py-1.5 rounded-lg hover:border-white/30 hover:text-white transition">Esci</button>
   </div>
 </nav>
 
 <!-- HERO -->
-<div class="hero">
-  <div class="hero-badge">Per impiantisti, manutenzione e edilizia</div>
-  <h1>Sai quanto stai<br><span>perdendo davvero?</span></h1>
-  <p>DiagnEco analizza i tuoi dati aziendali e ti mostra esattamente dove stai perdendo soldi — cliente per cliente, in euro reali.</p>
-  <div class="hero-cta">
-    <button class="btn-primary" onclick="document.getElementById('tool').scrollIntoView({behavior:'smooth'})">Analizza i tuoi dati</button>
-    <button class="btn-secondary" onclick="document.getElementById('come-funziona').scrollIntoView({behavior:'smooth'})">Come funziona</button>
-  </div>
-</div>
+<div class="pt-24 pb-16 px-6 max-w-4xl mx-auto">
 
-<!-- PROBLEMA -->
-<div class="section">
-  <div class="section-label">Il problema</div>
-  <h2>I dati ci sono.<br>La comprensione manca.</h2>
-  <p>Le PMI impiantistiche hanno dati nei gestionali, su Excel, nei preventivi. Ma nessuno li trasforma in una risposta chiara: <strong style="color:#e2e8f0">quali clienti mi costano più di quello che mi rendono?</strong></p>
-  <div class="stats">
-    <div class="stat-card">
-      <div class="stat-number">67%</div>
-      <div class="stat-label">delle PMI non sa quale cliente ha margine negativo</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-number">€31k</div>
-      <div class="stat-label">perdita media annua non rilevata nelle PMI under 2M</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-number">3 min</div>
-      <div class="stat-label">bastano per ottenere la diagnosi completa dei tuoi dati</div>
-    </div>
+  <!-- AUTH -->
+  <div id="authBox" class="mb-8 flex gap-3 bg-white/3 border border-white/8 rounded-xl p-4">
+    <input type="email" id="emailInput" placeholder="La tua email per accedere..."
+      class="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50"
+      onkeydown="if(event.key==='Enter')doAuth()">
+    <button onclick="doAuth()" class="bg-blue-600 hover:bg-blue-500 px-5 py-2.5 rounded-lg text-sm font-700 transition">Accedi</button>
   </div>
-</div>
 
-<!-- COME FUNZIONA -->
-<div class="section" id="come-funziona" style="padding-top:0">
-  <div class="section-label">Come funziona</div>
-  <h2>Tre passaggi.<br>Zero interpretazioni.</h2>
-  <p>Il sistema non ti dice cosa fare. Ti mostra cosa sta succedendo nei tuoi numeri.</p>
-  <div class="steps">
-    <div class="step">
-      <div class="step-num">1</div>
-      <h3>Carica il CSV</h3>
-      <p>Esporta i dati dal tuo gestionale o Excel. Data, cliente, importo. Il sistema pulisce e normalizza automaticamente.</p>
+  <!-- HERO NUMERI -->
+  <div id="heroSection" class="hidden">
+    <div class="text-center mb-2">
+      <p class="text-slate-400 text-sm uppercase tracking-widest font-600">Dalla tua analisi</p>
     </div>
-    <div class="step">
-      <div class="step-num">2</div>
-      <h3>Il motore calcola</h3>
-      <p>8 KPI economici: margine per cliente, dipendenza, volatilità cashflow, concentrazione, efficienza operativa e molto altro.</p>
+
+    <div class="grid grid-cols-2 gap-4 mb-6">
+      <!-- PERDITA -->
+      <div class="bg-red-950/40 border border-red-500/30 rounded-2xl p-6 text-center">
+        <div class="text-xs uppercase tracking-widest text-red-400 font-600 mb-2">Perdita stimata 90 giorni</div>
+        <div class="text-5xl font-900 text-red-400 counter pulse-red" id="heroLoss">€0</div>
+        <div class="text-xs text-red-400/60 mt-2">Questa perdita sta aumentando ogni giorno.</div>
+      </div>
+      <!-- RECUPERO -->
+      <div class="bg-emerald-950/40 border border-emerald-500/30 rounded-2xl p-6 text-center">
+        <div class="text-xs uppercase tracking-widest text-emerald-400 font-600 mb-2">Recupero potenziale annuo</div>
+        <div class="text-5xl font-900 text-emerald-400 counter" id="heroRecovery">€0</div>
+        <div class="text-xs text-emerald-400/60 mt-2">Recuperabile con le informazioni giuste.</div>
+      </div>
     </div>
-    <div class="step">
-      <div class="step-num">3</div>
-      <h3>Vedi la verità</h3>
-      <p>Perdita mensile reale, clienti critici, recupero potenziale. Numeri precisi, non stime. Filtrati per il tuo livello di accesso.</p>
+
+    <!-- DIAGNOSI -->
+    <div id="diagnosisBar" class="hidden bg-white/3 border border-white/8 rounded-xl px-5 py-3 flex items-center gap-3 mb-6">
+      <span id="diagnosisBadge" class="text-xs font-700 px-2.5 py-1 rounded-full"></span>
+      <span id="diagnosisText" class="text-sm text-slate-300"></span>
     </div>
   </div>
-</div>
 
-<!-- TARGET -->
-<div class="section" style="padding-top:0">
-  <div class="section-label">Per chi è</div>
-  <h2>PMI da 300k a 5M<br>di fatturato.</h2>
-  <p>Settori in cui il controllo economico fa la differenza tra crescere e perdere margine senza saperlo.</p>
-  <div class="target-grid">
-    <div class="target-card">
-      <div class="target-icon">🔧</div>
-      <h3>Impiantisti</h3>
-      <p>Ore non fatturate, margine per commessa, scostamento preventivo/consuntivo.</p>
+  <!-- UPLOAD -->
+  <div class="bg-white/3 border border-dashed border-white/12 rounded-2xl p-6 mb-6">
+    <div class="flex gap-3 items-center">
+      <input type="file" id="file" accept=".csv" class="flex-1 text-sm text-slate-400 file:bg-white/10 file:border-0 file:text-white file:text-xs file:px-4 file:py-2 file:rounded-lg file:cursor-pointer file:mr-3">
+      <button onclick="analyze()" class="bg-blue-600 hover:bg-blue-500 px-6 py-2.5 rounded-xl text-sm font-700 transition whitespace-nowrap">Analizza</button>
     </div>
-    <div class="target-card">
-      <div class="target-icon">⚙️</div>
-      <h3>Manutenzione</h3>
-      <p>Costo per intervento, saturazione squadre, clienti in perdita sistematica.</p>
-    </div>
-    <div class="target-card">
-      <div class="target-icon">🏗️</div>
-      <h3>Edilizia</h3>
-      <p>Scostamento cantieri, costo reale materiali, dipendenza da singoli committenti.</p>
-    </div>
+    <p class="text-xs text-slate-600 mt-2">CSV con colonne: data, cliente, importo — oppure formato impiantisti completo</p>
   </div>
-</div>
 
-<!-- PREZZI -->
-<div class="section" style="padding-top:0">
-  <div class="section-label">Accesso</div>
-  <h2>Vedi prima il danno.<br>Poi decidi quanto approfondire.</h2>
-  <p>Ogni livello sblocca una comprensione più profonda della tua situazione economica.</p>
-  <div class="pricing">
-    <div class="price-card">
-      <div class="price-tier">FREE</div>
-      <div class="price-amount">€0</div>
-      <div class="price-desc">Carica i dati e vedi subito la perdita reale.</div>
-      <ul class="price-features">
-        <li>Perdita stimata 90 giorni</li>
-        <li>Recupero potenziale annuo</li>
-        <li>Diagnosi sistema</li>
-        <li class="locked">Clienti critici</li>
-        <li class="locked">KPI strutturali</li>
-      </ul>
-    </div>
-    <div class="price-card featured">
-      <div class="price-badge">PIÙ POPOLARE</div>
-      <div class="price-tier">BASE</div>
-      <div class="price-amount">€22 <span>una tantum</span></div>
-      <div class="price-desc">Scopri dove perdi e con chi.</div>
-      <ul class="price-features">
-        <li>Tutto il FREE</li>
-        <li>Top 3 clienti critici</li>
-        <li>Margine per cliente</li>
-        <li>Perdita annua proiettata</li>
-        <li class="locked">KPI strutturali completi</li>
-      </ul>
-    </div>
-    <div class="price-card">
-      <div class="price-tier">FULL</div>
-      <div class="price-amount">€99 <span>una tantum</span></div>
-      <div class="price-desc">Struttura completa delle perdite con KPI e correlazioni.</div>
-      <ul class="price-features">
-        <li>Tutto il BASE</li>
-        <li>8 KPI strutturali</li>
-        <li>Concentrazione HHI</li>
-        <li>Efficienza operativa</li>
-        <li>Volatilità cashflow</li>
-      </ul>
-    </div>
-  </div>
-</div>
+  <div id="loading" class="hidden text-center text-slate-500 text-sm py-4">Analisi in corso...</div>
 
-<!-- TOOL -->
-<div class="tool-section" id="tool">
-  <div class="tool-inner">
-    <div class="tool-header">
-      <div class="section-label">Analisi</div>
-      <h2 style="font-size:32px;font-weight:800;letter-spacing:-0.5px;margin-bottom:8px">Carica i tuoi dati adesso</h2>
-      <p style="color:#64748b;font-size:14px">CSV con colonne: data, cliente, importo — oppure formato impiantisti completo</p>
+  <!-- RISULTATI -->
+  <div id="results" class="hidden space-y-4 fadeup">
+
+    <!-- CLIENTI -->
+    <div id="clientiBlock" class="relative rounded-2xl overflow-hidden">
+      <div class="bg-white/3 border border-white/8 rounded-2xl p-6">
+        <div class="text-xs uppercase tracking-widest text-slate-500 font-600 mb-4">Clienti critici</div>
+        <div id="clientiContent"></div>
+      </div>
+      <!-- BLUR OVERLAY clienti -->
+      <div id="clientiBlur" class="hidden absolute inset-0 blur-overlay bg-[#020617]/70 rounded-2xl flex flex-col items-center justify-center gap-3 text-center p-6">
+        <div class="text-2xl">🔒</div>
+        <div class="text-sm text-slate-300 font-600">I clienti in perdita sono nascosti</div>
+        <div class="text-xs text-slate-500 mb-2">Scopri esattamente dove stai perdendo soldi</div>
+        <button onclick="unlock('base')" class="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-xl text-sm font-700 transition">Sblocca ora — €22</button>
+      </div>
     </div>
 
-    <div class="auth-zone" id="authBox">
-      <input type="email" id="emailInput" placeholder="La tua email per accedere e salvare l'analisi...">
-      <button class="btn-auth" onclick="doAuth()">Accedi</button>
+    <!-- KPI -->
+    <div id="kpiBlock" class="relative rounded-2xl overflow-hidden">
+      <div class="bg-white/3 border border-white/8 rounded-2xl p-6">
+        <div class="text-xs uppercase tracking-widest text-slate-500 font-600 mb-4">KPI Strutturali</div>
+        <div id="kpiContent"></div>
+      </div>
+      <!-- BLUR OVERLAY KPI -->
+      <div id="kpiBlur" class="hidden absolute inset-0 blur-overlay bg-[#020617]/70 rounded-2xl flex flex-col items-center justify-center gap-3 text-center p-6">
+        <div class="text-2xl">🔒</div>
+        <div class="text-sm text-slate-300 font-600">KPI strutturali bloccati</div>
+        <div class="text-xs text-slate-500 mb-2">Concentrazione, efficienza, volatilità e 5 altri indicatori</div>
+        <button onclick="unlock('full')" class="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-xl text-sm font-700 transition">Sblocca FULL — €99</button>
+      </div>
     </div>
 
-    <div id="levelBanner" class="level-banner"></div>
-
-    <div class="upload-zone">
-      <input type="file" id="file" accept=".csv">
-      <button class="btn-analyze" onclick="analyze()">Analizza</button>
-    </div>
-
-    <div id="loading">Analisi in corso...</div>
-    <div id="dashboard"></div>
   </div>
 </div>
 
 <!-- FOOTER -->
-<footer>
-  <strong>DiagnEco</strong> — Diagnosi Economica per PMI Impiantistiche<br>
-  <span style="margin-top:8px;display:block">Per PMI da 300k a 5M di fatturato · Impiantistica · Manutenzione · Edilizia</span>
+<footer class="border-t border-white/5 py-10 text-center text-slate-600 text-xs">
+  <div class="font-700 text-slate-400 mb-1">DiagnEco — Diagnosi Economica per PMI Impiantistiche</div>
+  Per PMI da 300k a 5M di fatturato · Impiantistica · Manutenzione · Edilizia
 </footer>
 
 <script>
 var currentUser = null;
 
-function fmt(n){return Math.round(n).toLocaleString('it-IT')}
-function rc(s){return s>=70?'r':s>=40?'y':'g'}
-function rbc(s){return s>=70?'br':s>=40?'by':'bg'}
-function rlbl(s){return s>=70?'CRITICO':s>=40?'ALTO RISCHIO':'STABILE'}
-function rcard(s){return s>=70?'red':s>=40?'yellow':'green'}
+function fmt(n){ return Math.abs(Math.round(n)).toLocaleString('it-IT'); }
+
+function animateValue(el, target, prefix, duration){
+  var start = 0, step = target / (duration / 16);
+  var timer = setInterval(function(){
+    start += step;
+    if(start >= target){ start = target; clearInterval(timer); }
+    el.textContent = prefix + fmt(start);
+  }, 16);
+}
+
+async function loadMe(){
+  try{
+    var token = localStorage.getItem('diagn_token');
+    var headers = {};
+    if(token) headers['X-User-Token'] = token;
+    var res = await fetch('/me', {headers: headers});
+    var d = await res.json();
+    if(d.status === 'ok'){
+      currentUser = d;
+      updateNav();
+      document.getElementById('authBox').style.display = 'none';
+    }
+  }catch(e){}
+}
 
 async function doAuth(){
-  var email=document.getElementById('emailInput').value.trim();
-  if(!email||!email.includes('@')){alert('Inserisci una email valida');return}
+  var email = document.getElementById('emailInput').value.trim();
+  if(!email || !email.includes('@')){ alert('Email non valida'); return; }
   try{
-    var res=await fetch('/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})});
-    var d=await res.json();
-    if(d.status==='ok'){
-      currentUser=d;
-      if(d.token) localStorage.setItem('diagn_token',d.token);
-      updateUI();
-      document.getElementById('authBox').style.display='none';
+    var res = await fetch('/auth', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email: email})});
+    var d = await res.json();
+    if(d.status === 'ok'){
+      currentUser = d;
+      if(d.token) localStorage.setItem('diagn_token', d.token);
+      updateNav();
+      document.getElementById('authBox').style.display = 'none';
     }
-  }catch(e){alert('Errore: '+e.message)}
+  }catch(e){ alert('Errore: ' + e.message); }
 }
 
 async function doLogout(){
   await fetch('/logout');
   localStorage.removeItem('diagn_token');
-  currentUser=null;
-  document.getElementById('navEmail').textContent='non autenticato';
-  document.getElementById('navLevel').textContent='';
-  document.getElementById('logoutBtn').style.display='none';
-  document.getElementById('authBox').style.display='flex';
-  document.getElementById('dashboard').innerHTML='';
-  document.getElementById('levelBanner').style.display='none';
+  currentUser = null;
+  document.getElementById('navEmail').textContent = '';
+  document.getElementById('navLevel').textContent = '';
+  document.getElementById('logoutBtn').classList.add('hidden');
+  document.getElementById('authBox').style.display = 'flex';
+  document.getElementById('heroSection').classList.add('hidden');
+  document.getElementById('results').classList.add('hidden');
 }
 
-async function loadMe(){
+function updateNav(){
+  if(!currentUser) return;
+  var levels = ['FREE','BASE','FULL'];
+  document.getElementById('navEmail').textContent = currentUser.email;
+  document.getElementById('navLevel').textContent = levels[currentUser.access_level] || 'FREE';
+  document.getElementById('logoutBtn').classList.remove('hidden');
+}
+
+async function analyze(){
+  var fi = document.getElementById('file');
+  if(!fi.files[0]){ alert('Seleziona un file CSV'); return; }
+  var fd = new FormData();
+  fd.append('file', fi.files[0]);
+  document.getElementById('loading').classList.remove('hidden');
+  document.getElementById('results').classList.add('hidden');
   try{
-    var token=localStorage.getItem('diagn_token');
-    var headers={};
-    if(token) headers['X-User-Token']=token;
-    var res=await fetch('/me',{headers:headers});
-    var d=await res.json();
-    if(d.status==='ok'){currentUser=d;currentUser.token=token;updateUI();document.getElementById('authBox').style.display='none';}
-  }catch(e){}
+    var token = localStorage.getItem('diagn_token');
+    var headers = {};
+    if(token) headers['X-User-Token'] = token;
+    var res = await fetch('/analyze', {method:'POST', body: fd, headers: headers});
+    var d = await res.json();
+    document.getElementById('loading').classList.add('hidden');
+    if(d.status === 'error'){ alert('Errore: ' + (d.msg||'')); return; }
+    renderResults(d);
+  }catch(e){
+    document.getElementById('loading').classList.add('hidden');
+    alert('Errore: ' + e.message);
+  }
 }
 
-function updateUI(){
-  if(!currentUser)return;
-  var levels=['FREE','BASE','FULL'];
-  document.getElementById('navEmail').textContent=currentUser.email;
-  document.getElementById('navLevel').textContent=levels[currentUser.access_level]||'FREE';
-  document.getElementById('logoutBtn').style.display='inline';
-  var banner=document.getElementById('levelBanner');
-  if(currentUser.access_level===0){
-    banner.style.display='block';
-    banner.innerHTML='Stai usando il livello <strong>FREE</strong> — vedi perdita e recupero. Per sbloccare clienti e KPI scegli un piano sopra.';
-  } else if(currentUser.access_level===1){
-    banner.style.display='block';
-    banner.innerHTML='Stai usando il livello <strong>BASE</strong> — vedi i clienti critici. Per KPI completi passa a FULL.';
-  } else {
-    banner.style.display='none';
+function renderResults(d){
+  var level = d.access_level || 0;
+
+  // HERO
+  document.getElementById('heroSection').classList.remove('hidden');
+  animateValue(document.getElementById('heroLoss'), d.loss_90d || 0, '€', 800);
+  animateValue(document.getElementById('heroRecovery'), d.recovery_potential || 0, '€', 800);
+
+  // DIAGNOSI
+  if(d.diagnosis){
+    var bar = document.getElementById('diagnosisBar');
+    var badge = document.getElementById('diagnosisBadge');
+    var text = document.getElementById('diagnosisText');
+    bar.classList.remove('hidden');
+    var rs = d.risk_score || 0;
+    if(rs >= 70){
+      badge.textContent = 'CRITICO';
+      badge.className = 'text-xs font-700 px-2.5 py-1 rounded-full bg-red-500/20 text-red-400';
+    } else if(rs >= 40){
+      badge.textContent = 'ALTO RISCHIO';
+      badge.className = 'text-xs font-700 px-2.5 py-1 rounded-full bg-yellow-500/20 text-yellow-400';
+    } else {
+      badge.textContent = 'STABILE';
+      badge.className = 'text-xs font-700 px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400';
+    }
+    text.textContent = d.diagnosis;
   }
+
+  // CLIENTI
+  var cc = document.getElementById('clientiContent');
+  var cb = document.getElementById('clientiBlur');
+  if(level >= 1 && d.top_losses && d.top_losses.length){
+    cb.classList.add('hidden');
+    var html = '';
+    if(d.worst_client){
+      html += '<div class="flex justify-between items-center mb-4 pb-4 border-b border-white/5">';
+      html += '<div><div class="text-xs text-slate-500 mb-1">Cliente critico</div>';
+      html += '<div class="text-2xl font-900 text-red-400">' + d.worst_client + '</div>';
+      html += '<div class="text-xs text-slate-500">Margine: €' + fmt(d.worst_margin||0) + '</div></div>';
+      html += '<div class="text-right"><div class="text-xs text-slate-500 mb-1">Migliore cliente</div>';
+      html += '<div class="text-lg font-700 text-emerald-400">' + (d.best_client||'') + ' €' + fmt(d.best_margin||0) + '</div></div>';
+      html += '</div>';
+    }
+    d.top_losses.forEach(function(c, i){
+      html += '<div class="flex justify-between items-center py-2.5 border-b border-white/5 last:border-0">';
+      html += '<span class="font-600 text-sm">' + c.client + '</span>';
+      html += '<span class="text-red-400 font-700 text-sm">€' + fmt(c.margin) + '</span>';
+      html += '</div>';
+    });
+    cc.innerHTML = html;
+  } else {
+    // Dati fittizi con blur
+    cc.innerHTML = '<div class="space-y-2">' +
+      ['Cliente A','Cliente B','Cliente C'].map(function(n,i){
+        return '<div class="flex justify-between items-center py-2.5 border-b border-white/5"><span class="font-600 text-sm">' + n + '</span><span class="text-red-400 font-700 text-sm">€' + [3900,1350,530][i] + '</span></div>';
+      }).join('') + '</div>';
+    cb.classList.remove('hidden');
+  }
+
+  // KPI
+  var kc = document.getElementById('kpiContent');
+  var kb = document.getElementById('kpiBlur');
+  if(level >= 2){
+    kb.classList.add('hidden');
+    var krows = [
+      ['Concentrazione HHI', (d.concentration||0).toFixed(3), d.concentration > 0.5 ? 'text-red-400' : 'text-emerald-400'],
+      ['Volatilità cashflow', '€' + fmt(d.volatility||0), d.volatility > 500 ? 'text-red-400' : d.volatility > 300 ? 'text-yellow-400' : 'text-emerald-400'],
+      ['Failure probability', ((d.failure_probability||0)*100).toFixed(1) + '%', d.failure_probability > 0.6 ? 'text-red-400' : 'text-emerald-400'],
+      ['Efficienza operativa', (d.efficiency||0).toFixed(2) + 'x', d.efficiency >= 1.2 ? 'text-emerald-400' : d.efficiency >= 0.8 ? 'text-yellow-400' : 'text-red-400'],
+      ['Dipendenza top cliente', (d.dependency||0).toFixed(1) + '%', d.dependency >= 60 ? 'text-red-400' : d.dependency >= 40 ? 'text-yellow-400' : 'text-emerald-400'],
+      ['Cashflow medio', '€' + fmt(d.cashflow_tension||0), (d.cashflow_tension||0) >= 0 ? 'text-emerald-400' : 'text-red-400'],
+    ];
+    kc.innerHTML = krows.map(function(r){
+      return '<div class="flex justify-between items-center py-2.5 border-b border-white/5 last:border-0"><span class="text-sm text-slate-400">' + r[0] + '</span><span class="font-700 text-sm ' + r[2] + '">' + r[1] + '</span></div>';
+    }).join('');
+  } else {
+    kc.innerHTML = '<div class="space-y-2">' +
+      [['Concentrazione HHI','0.4xx'],['Volatilità cashflow','€x.xxx'],['Failure probability','xx.x%'],['Efficienza operativa','x.xxx'],['Dipendenza top cliente','xx.x%'],['Cashflow medio','€xxx']].map(function(r){
+        return '<div class="flex justify-between items-center py-2.5 border-b border-white/5"><span class="text-sm text-slate-400">' + r[0] + '</span><span class="font-700 text-sm text-slate-600 blur-sm select-none">' + r[1] + '</span></div>';
+      }).join('') + '</div>';
+    kb.classList.remove('hidden');
+  }
+
+  document.getElementById('results').classList.remove('hidden');
 }
 
 async function unlock(tier){
   if(!currentUser){
     document.getElementById('emailInput').focus();
-    document.getElementById('tool').scrollIntoView({behavior:'smooth'});
-    alert('Inserisci prima la tua email.');return;
+    alert('Inserisci prima la tua email.');
+    return;
   }
   try{
-    var token=localStorage.getItem('diagn_token');
-    var headers={};
-    if(token) headers['X-User-Token']=token;
-    var res=await fetch('/create-checkout-session/'+tier,{headers:headers});
-    var d=await res.json();
-    if(d.status==='ok'&&d.url){window.location.href=d.url;}
-    else{alert('Errore: '+(d.msg||'riprova'));}
-  }catch(e){alert('Errore: '+e.message)}
-}
-
-async function analyze(){
-  var fi=document.getElementById('file');
-  if(!fi.files[0]){alert('Seleziona un file CSV');return}
-  var fd=new FormData();fd.append('file',fi.files[0]);
-  document.getElementById('loading').style.display='block';
-  document.getElementById('dashboard').innerHTML='';
-  try{
-    var token=localStorage.getItem('diagn_token');
-    var headers={};
-    if(token) headers['X-User-Token']=token;
-    var res=await fetch('/analyze',{method:'POST',body:fd,headers:headers});
-    var text=await res.text();
-    document.getElementById('loading').style.display='none';
-    var d;
-    try{d=JSON.parse(text)}catch(e){
-      document.getElementById('dashboard').innerHTML='<div class="card red"><div class="lbl">Errore</div>'+text+'</div>';return
-    }
-    if(d.status==='error'){
-      document.getElementById('dashboard').innerHTML='<div class="card red"><div class="lbl">Errore</div>'+(d.msg||'')+'</div>';return
-    }
-    renderDashboard(d);
-  }catch(err){
-    document.getElementById('loading').style.display='none';
-    document.getElementById('dashboard').innerHTML='<div class="card red"><div class="lbl">Errore</div>'+err.message+'</div>';
-  }
-}
-
-function renderDashboard(d){
-  var level=d.access_level||0;
-  var lossM=Math.abs(d.worst_margin||0);
-  var loss90=d.loss_90d||lossM*3;
-  var recov=d.recovery_potential||0;
-  var html='';
-
-  html+='<div class="grid2">';
-  html+='<div class="card '+(d.risk_score>=70?'red':d.risk_score>=40?'yellow':'green')+'">';
-  if(d.risk_score!==undefined){
-    var bc=d.risk_score>=70?'#ef4444':d.risk_score>=40?'#eab308':'#22c55e';
-    html+='<div class="lbl">Risk Score</div>';
-    html+='<div class="big '+rc(d.risk_score)+'">'+d.risk_score.toFixed(1)+'%</div>';
-    html+='<div class="bar-bg"><div class="bar" id="b1" style="background:'+bc+'"></div></div>';
-    html+='<div class="sub" style="margin-top:8px"><span class="badge '+rbc(d.risk_score)+'">'+rlbl(d.risk_score)+'</span>'+d.diagnosis+'</div>';
-  } else {
-    html+='<div class="lbl">Diagnosi</div><div style="font-size:15px;font-weight:700;margin-top:6px">'+d.diagnosis+'</div>';
-  }
-  html+='</div>';
-
-  html+='<div class="card">';
-  html+='<div class="lbl">Perdita stimata 90 giorni</div>';
-  html+='<div class="big r">&#8364;'+fmt(loss90)+'</div>';
-  html+='<div class="divider"></div>';
-  html+='<div class="lbl">Recupero potenziale annuo</div>';
-  html+='<div style="font-size:20px;font-weight:800;color:#22c55e">&#8364;'+fmt(recov)+'</div>';
-  html+='</div></div>';
-
-  if(level>=1){
-    html+='<div class="grid2">';
-    html+='<div class="card red">';
-    html+='<div class="lbl">Cliente critico</div>';
-    html+='<div style="font-size:28px;font-weight:800;color:#ef4444">'+(d.worst_client||'N/A')+'</div>';
-    html+='<div class="sub">Margine: &#8364;'+fmt(d.worst_margin||0)+'</div>';
-    html+='<div class="divider"></div>';
-    html+='<div class="lbl">Migliore cliente</div>';
-    html+='<div style="font-size:16px;font-weight:700;color:#22c55e">'+(d.best_client||'N/A')+' &#8364;'+fmt(d.best_margin||0)+'</div>';
-    html+='</div>';
-    html+='<div class="card">';
-    html+='<div class="lbl">Margine totale</div>';
-    var tm=d.total_margin||0;
-    html+='<div style="font-size:26px;font-weight:800;color:'+(tm>=0?'#22c55e':'#ef4444')+'">&#8364;'+fmt(tm)+'</div>';
-    html+='<div class="divider"></div>';
-    html+='<div class="lbl">Perdita annua proiettata</div>';
-    html+='<div style="font-size:16px;font-weight:700;color:#ef4444">&#8364;'+fmt(d.loss_annual||0)+'</div>';
-    html+='</div></div>';
-
-    if(d.top_losses&&d.top_losses.length){
-      html+='<div class="card full" style="margin-bottom:12px">';
-      html+='<div class="lbl">Top 3 clienti critici</div>';
-      html+='<div style="margin-top:10px">';
-      d.top_losses.forEach(function(c){
-        html+='<div class="crow"><span style="font-weight:700">'+c.client+'</span><span style="color:'+(c.margin<0?'#ef4444':'#22c55e')+'">&#8364;'+fmt(c.margin)+'</span></div>';
-      });
-      html+='</div></div>';
-    }
-  } else {
-    html+='<div class="card full" style="margin-bottom:12px">';
-    html+='<div class="lbl">Clienti critici</div>';
-    html+='<div class="lock-overlay">';
-    html+='<div class="lock-icon">&#128274;</div>';
-    html+='<div class="lock-text">Sblocca BASE per vedere i clienti in perdita</div>';
-    html+='<button class="btn-analyze" style="margin-top:12px;padding:10px 24px" onclick="unlock(&quot;base&quot;)">Sblocca BASE — €22</button>';
-    html+='</div></div>';
-  }
-
-  if(level>=2){
-    html+='<div class="card full">';
-    html+='<div class="lbl">KPI Strutturali</div>';
-    html+='<div style="margin-top:10px">';
-    html+=krow('Concentrazione HHI',d.concentration>0.5?'#ef4444':'#22c55e',(d.concentration||0).toFixed(3));
-    html+=krow('Volatilita cashflow',d.volatility>500?'#ef4444':d.volatility>300?'#eab308':'#22c55e','&#8364;'+fmt(d.volatility||0));
-    html+=krow('Failure probability',d.failure_probability>0.6?'#ef4444':'#22c55e',((d.failure_probability||0)*100).toFixed(1)+'%');
-    html+=krow('Efficienza operativa',d.efficiency>=1.2?'#22c55e':d.efficiency>=0.8?'#eab308':'#ef4444',(d.efficiency||0).toFixed(2)+'x');
-    html+=krow('Dipendenza top cliente',d.dependency>=60?'#ef4444':d.dependency>=40?'#eab308':'#22c55e',(d.dependency||0).toFixed(1)+'%');
-    html+=krow('Cashflow medio',(d.cashflow_tension||0)>=0?'#22c55e':'#ef4444','&#8364;'+fmt(d.cashflow_tension||0));
-    html+='</div></div>';
-  } else {
-    html+='<div class="card full">';
-    html+='<div class="lbl">KPI Strutturali completi</div>';
-    html+='<div class="lock-overlay">';
-    html+='<div class="lock-icon">&#128274;</div>';
-    html+='<div class="lock-text">Sblocca FULL per KPI, correlazioni e scenari</div>';
-    html+='<button class="btn-analyze" style="margin-top:12px;padding:10px 24px" onclick="unlock(&quot;full&quot;)">Sblocca FULL — €99</button>';
-    html+='</div></div>';
-  }
-
-  document.getElementById('dashboard').innerHTML=html;
-  setTimeout(function(){
-    var b1=document.getElementById('b1');
-    if(b1&&d.risk_score)b1.style.width=d.risk_score+'%';
-  },50);
-}
-
-function krow(name,color,display){
-  return '<div class="krow"><span class="kn">'+name+'</span><span class="kv" style="color:'+color+'">'+display+'</span></div>';
+    var token = localStorage.getItem('diagn_token');
+    var headers = {'X-User-Token': token || ''};
+    var res = await fetch('/create-checkout-session/' + tier, {headers: headers});
+    var d = await res.json();
+    if(d.status === 'ok' && d.url){ window.location.href = d.url; }
+    else { alert('Errore: ' + (d.msg || 'riprova')); }
+  }catch(e){ alert('Errore: ' + e.message); }
 }
 
 loadMe();
