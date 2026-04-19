@@ -186,7 +186,7 @@ def success():
         if user:
             user.access_level = 1 if tier == "base" else 2
             db.session.commit()
-    return render_template("index.html")
+    return render_template("success.html")
 
 @app.route("/webhook", methods=["POST"])
 def webhook():

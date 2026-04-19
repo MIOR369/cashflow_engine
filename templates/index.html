@@ -3,309 +3,350 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DiagnEco — Diagnosi Economica per PMI Impiantistiche</title>
+<title>DiagnEco — Scopri quanto stai perdendo</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
-  * { font-family: 'Inter', sans-serif; }
-  .counter { font-variant-numeric: tabular-nums; }
-  @keyframes pulse-red { 0%,100%{opacity:1} 50%{opacity:.6} }
-  .pulse-red { animation: pulse-red 2s infinite; }
-  @keyframes fadeup { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-  .fadeup { animation: fadeup 0.5s ease forwards; }
-  .blur-overlay { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+*{font-family:system-ui,-apple-system,sans-serif}
+@keyframes fadeup{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.fadeup{animation:fadeup .4s ease forwards}
+.spin{animation:spin .8s linear infinite}
+.pulse{animation:pulse 2s infinite}
+.blur-lock{filter:blur(5px);pointer-events:none;user-select:none}
+.glass{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 </style>
 </head>
-<body class="bg-[#020617] text-white min-h-screen">
+<body class="bg-[#030712] text-white min-h-screen">
 
-<!-- NAV -->
-<nav class="fixed top-0 left-0 right-0 z-50 bg-[#020617]/90 backdrop-blur border-b border-white/5 px-6 py-4 flex justify-between items-center">
-  <div class="text-lg font-black tracking-tight">Diagn<span class="text-blue-500">Eco</span></div>
-  <div class="flex items-center gap-3 text-sm">
-    <span id="navEmail" class="text-slate-400"></span>
-    <span id="navLevel" class="font-bold text-blue-400 text-xs uppercase tracking-widest"></span>
-    <button id="logoutBtn" onclick="doLogout()" class="hidden text-xs text-slate-500 border border-white/10 px-3 py-1.5 rounded-lg hover:border-white/30 hover:text-white transition">Esci</button>
+<nav class="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-[#030712]/90 glass px-6 py-4 flex justify-between items-center">
+  <span class="font-black text-lg tracking-tight">Diagn<span class="text-blue-500">Eco</span></span>
+  <div class="flex items-center gap-3">
+    <span id="navEmail" class="text-xs text-slate-500"></span>
+    <span id="navLevel" class="text-xs font-bold text-blue-400 uppercase tracking-widest"></span>
+    <button id="btnLogout" class="hidden text-xs border border-white/10 text-slate-500 px-3 py-1.5 rounded-lg hover:text-white hover:border-white/30 transition" onclick="logout()">Esci</button>
   </div>
 </nav>
 
-<!-- HERO -->
-<div class="pt-24 pb-16 px-6 max-w-4xl mx-auto">
+<main class="pt-24 pb-20 px-4 max-w-xl mx-auto">
 
-  <!-- AUTH -->
-  <div id="authBox" class="mb-8 flex gap-3 bg-white/3 border border-white/8 rounded-xl p-4">
-    <input type="email" id="emailInput" placeholder="La tua email per accedere..."
-      class="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50"
-      onkeydown="if(event.key==='Enter')doAuth()">
-    <button onclick="doAuth()" class="bg-blue-600 hover:bg-blue-500 px-5 py-2.5 rounded-lg text-sm font-700 transition">Accedi</button>
+  <!-- HERO -->
+  <div id="sectionHero" class="text-center py-12">
+    <div class="inline-block text-xs font-bold uppercase tracking-widest text-red-400 border border-red-500/20 bg-red-500/8 px-4 py-1.5 rounded-full mb-8">Per impiantisti · Manutenzione · Edilizia</div>
+    <h1 class="text-4xl sm:text-5xl font-black leading-tight tracking-tight mb-4">Stai perdendo fino a<br><span class="text-red-400">€30.000 all'anno.</span></h1>
+    <p class="text-slate-400 text-lg mb-10">Scoprilo in 10 secondi.<br>Carica i tuoi dati — il motore fa il resto.</p>
   </div>
 
-  <!-- HERO NUMERI -->
-  <div id="heroSection" class="hidden">
-    <div class="text-center mb-2">
-      <p class="text-slate-400 text-sm uppercase tracking-widest font-600">Dalla tua analisi</p>
+  <!-- AUTH -->
+  <div id="sectionAuth" class="mb-4">
+    <div class="flex gap-2">
+      <input id="inputEmail" type="email" placeholder="La tua email..."
+        class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm placeholder-slate-600 focus:outline-none focus:border-blue-500/40 transition"
+        onkeydown="if(event.key==='Enter')login()">
+      <button onclick="login()" class="bg-blue-600 hover:bg-blue-500 transition px-5 py-3 rounded-xl text-sm font-bold whitespace-nowrap">Entra</button>
     </div>
+    <div id="authError" class="text-xs text-red-400 mt-2 hidden"></div>
+  </div>
 
-    <div class="grid grid-cols-2 gap-4 mb-6">
-      <!-- PERDITA -->
-      <div class="bg-red-950/40 border border-red-500/30 rounded-2xl p-6 text-center">
-        <div class="text-xs uppercase tracking-widest text-red-400 font-600 mb-2">Perdita stimata 90 giorni</div>
-        <div class="text-5xl font-900 text-red-400 counter pulse-red" id="heroLoss">€0</div>
-        <div class="text-xs text-red-400/60 mt-2">Questa perdita sta aumentando ogni giorno.</div>
+  <!-- UPLOAD -->
+  <div class="bg-white/3 border border-dashed border-white/10 rounded-2xl p-6 mb-4 hover:border-white/20 transition">
+    <input id="inputFile" type="file" accept=".csv"
+      class="w-full text-sm text-slate-400 mb-4 file:bg-blue-600 file:hover:bg-blue-500 file:border-0 file:text-white file:text-sm file:font-bold file:px-5 file:py-2.5 file:rounded-xl file:cursor-pointer file:mr-4 file:transition">
+    <button onclick="analyze()" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 transition shadow-lg shadow-blue-500/20">Analizza i miei dati →</button>
+    <p class="text-xs text-slate-600 mt-3 text-center">CSV: data, cliente, importo — oppure formato impiantisti completo</p>
+  </div>
+
+  <!-- LOADING -->
+  <div id="sectionLoading" class="hidden text-center py-8">
+    <div class="inline-flex items-center gap-3 text-slate-400 text-sm">
+      <div class="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full spin"></div>
+      Analisi in corso...
+    </div>
+  </div>
+
+  <!-- ERROR -->
+  <div id="sectionError" class="hidden bg-red-950/40 border border-red-500/20 rounded-2xl p-5 text-sm text-red-300"></div>
+
+  <!-- RESULTS -->
+  <div id="sectionResults" class="hidden fadeup space-y-4">
+
+    <!-- NUMERI HERO -->
+    <div class="grid grid-cols-2 gap-3">
+      <div class="bg-red-950/40 border border-red-500/20 rounded-2xl p-5 text-center">
+        <div class="text-xs font-bold uppercase tracking-widest text-red-400/70 mb-2">Perdita 90 giorni</div>
+        <div id="numLoss" class="text-3xl font-black text-red-400 pulse tabular-nums">€0</div>
+        <div class="text-xs text-red-400/50 mt-1">↑ Cresce ogni giorno</div>
       </div>
-      <!-- RECUPERO -->
-      <div class="bg-emerald-950/40 border border-emerald-500/30 rounded-2xl p-6 text-center">
-        <div class="text-xs uppercase tracking-widest text-emerald-400 font-600 mb-2">Recupero potenziale annuo</div>
-        <div class="text-5xl font-900 text-emerald-400 counter" id="heroRecovery">€0</div>
-        <div class="text-xs text-emerald-400/60 mt-2">Recuperabile con le informazioni giuste.</div>
+      <div class="bg-emerald-950/40 border border-emerald-500/20 rounded-2xl p-5 text-center">
+        <div class="text-xs font-bold uppercase tracking-widest text-emerald-400/70 mb-2">Recupero annuo</div>
+        <div id="numRecovery" class="text-3xl font-black text-emerald-400 tabular-nums">€0</div>
+        <div class="text-xs text-emerald-400/50 mt-1">Recuperabile</div>
       </div>
     </div>
 
     <!-- DIAGNOSI -->
-    <div id="diagnosisBar" class="hidden bg-white/3 border border-white/8 rounded-xl px-5 py-3 flex items-center gap-3 mb-6">
-      <span id="diagnosisBadge" class="text-xs font-700 px-2.5 py-1 rounded-full"></span>
-      <span id="diagnosisText" class="text-sm text-slate-300"></span>
+    <div id="rowDiagnosis" class="hidden flex items-center gap-3 bg-white/3 border border-white/8 rounded-xl px-4 py-3">
+      <span id="badgeDiag" class="text-xs font-bold px-2.5 py-1 rounded-full"></span>
+      <span id="textDiag" class="text-sm text-slate-300 flex-1"></span>
+      <span id="scoreDiag" class="text-xs text-slate-500 tabular-nums"></span>
     </div>
-  </div>
-
-  <!-- UPLOAD -->
-  <div class="bg-white/3 border border-dashed border-white/12 rounded-2xl p-6 mb-6">
-    <div class="flex gap-3 items-center">
-      <input type="file" id="file" accept=".csv" class="flex-1 text-sm text-slate-400 file:bg-white/10 file:border-0 file:text-white file:text-xs file:px-4 file:py-2 file:rounded-lg file:cursor-pointer file:mr-3">
-      <button onclick="analyze()" class="bg-blue-600 hover:bg-blue-500 px-6 py-2.5 rounded-xl text-sm font-700 transition whitespace-nowrap">Analizza</button>
-    </div>
-    <p class="text-xs text-slate-600 mt-2">CSV con colonne: data, cliente, importo — oppure formato impiantisti completo</p>
-  </div>
-
-  <div id="loading" class="hidden text-center text-slate-500 text-sm py-4">Analisi in corso...</div>
-
-  <!-- RISULTATI -->
-  <div id="results" class="hidden space-y-4 fadeup">
 
     <!-- CLIENTI -->
-    <div id="clientiBlock" class="relative rounded-2xl overflow-hidden">
-      <div class="bg-white/3 border border-white/8 rounded-2xl p-6">
-        <div class="text-xs uppercase tracking-widest text-slate-500 font-600 mb-4">Clienti critici</div>
-        <div id="clientiContent"></div>
+    <div class="relative rounded-2xl overflow-hidden">
+      <div class="bg-white/3 border border-white/8 rounded-2xl p-5">
+        <div class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Clienti in perdita</div>
+        <div id="contentClienti"></div>
       </div>
-      <!-- BLUR OVERLAY clienti -->
-      <div id="clientiBlur" class="hidden absolute inset-0 blur-overlay bg-[#020617]/70 rounded-2xl flex flex-col items-center justify-center gap-3 text-center p-6">
-        <div class="text-2xl">🔒</div>
-        <div class="text-sm text-slate-300 font-600">I clienti in perdita sono nascosti</div>
-        <div class="text-xs text-slate-500 mb-2">Scopri esattamente dove stai perdendo soldi</div>
-        <button onclick="unlock('base')" class="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-xl text-sm font-700 transition">Sblocca ora — €22</button>
+      <div id="overlayClienti" class="hidden absolute inset-0 glass bg-[#030712]/75 rounded-2xl flex flex-col items-center justify-center gap-4 p-8 text-center">
+        <div class="text-3xl">🔒</div>
+        <div>
+          <div class="font-bold text-base mb-1">Chi ti sta costando di più?</div>
+          <div class="text-sm text-slate-400">Sblocca i clienti in perdita</div>
+        </div>
+        <button onclick="checkout('base')" class="w-full max-w-xs py-3.5 rounded-xl font-bold bg-blue-600 hover:bg-blue-500 transition shadow-lg shadow-blue-500/20">Sblocca ora — €22</button>
+        <div class="text-xs text-slate-600">Una tantum · Nessun abbonamento</div>
       </div>
     </div>
 
     <!-- KPI -->
-    <div id="kpiBlock" class="relative rounded-2xl overflow-hidden">
-      <div class="bg-white/3 border border-white/8 rounded-2xl p-6">
-        <div class="text-xs uppercase tracking-widest text-slate-500 font-600 mb-4">KPI Strutturali</div>
-        <div id="kpiContent"></div>
+    <div class="relative rounded-2xl overflow-hidden">
+      <div class="bg-white/3 border border-white/8 rounded-2xl p-5">
+        <div class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">KPI strutturali</div>
+        <div id="contentKpi"></div>
       </div>
-      <!-- BLUR OVERLAY KPI -->
-      <div id="kpiBlur" class="hidden absolute inset-0 blur-overlay bg-[#020617]/70 rounded-2xl flex flex-col items-center justify-center gap-3 text-center p-6">
-        <div class="text-2xl">🔒</div>
-        <div class="text-sm text-slate-300 font-600">KPI strutturali bloccati</div>
-        <div class="text-xs text-slate-500 mb-2">Concentrazione, efficienza, volatilità e 5 altri indicatori</div>
-        <button onclick="unlock('full')" class="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-xl text-sm font-700 transition">Sblocca FULL — €99</button>
+      <div id="overlayKpi" class="hidden absolute inset-0 glass bg-[#030712]/75 rounded-2xl flex flex-col items-center justify-center gap-4 p-8 text-center">
+        <div class="text-3xl">🔒</div>
+        <div>
+          <div class="font-bold text-base mb-1">8 KPI strutturali bloccati</div>
+          <div class="text-sm text-slate-400">Concentrazione, volatilità, efficienza e dipendenza</div>
+        </div>
+        <button onclick="checkout('full')" class="w-full max-w-xs py-3.5 rounded-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 transition shadow-lg">Sblocca FULL — €99</button>
+        <div class="text-xs text-slate-600">Una tantum · Nessun abbonamento</div>
       </div>
     </div>
 
   </div>
-</div>
+</main>
 
-<!-- FOOTER -->
-<footer class="border-t border-white/5 py-10 text-center text-slate-600 text-xs">
-  <div class="font-700 text-slate-400 mb-1">DiagnEco — Diagnosi Economica per PMI Impiantistiche</div>
-  Per PMI da 300k a 5M di fatturato · Impiantistica · Manutenzione · Edilizia
+<footer class="border-t border-white/5 py-8 text-center text-xs text-slate-700">
+  <div class="font-bold text-slate-500 mb-1">DiagnEco</div>
+  Per PMI da 300k a 5M · Impiantistica · Manutenzione · Edilizia
 </footer>
 
 <script>
-var currentUser = null;
+const state = {
+  token: localStorage.getItem('diagn_token') || '',
+  user: null,
+  data: null
+};
 
-function fmt(n){ return Math.abs(Math.round(n)).toLocaleString('it-IT'); }
+const $ = id => document.getElementById(id);
+const fmt = n => Math.abs(Math.round(n || 0)).toLocaleString('it-IT');
+const show = id => $(id).classList.remove('hidden');
+const hide = id => $(id).classList.add('hidden');
 
-function animateValue(el, target, prefix, duration){
-  var start = 0, step = target / (duration / 16);
-  var timer = setInterval(function(){
-    start += step;
-    if(start >= target){ start = target; clearInterval(timer); }
-    el.textContent = prefix + fmt(start);
+function showError(msg) {
+  const el = $('sectionError');
+  el.textContent = '⚠️ ' + msg;
+  show('sectionError');
+  setTimeout(() => hide('sectionError'), 6000);
+}
+
+function animateValue(el, target, ms) {
+  if (!el || !target) return;
+  let start = 0;
+  const step = target / (ms / 16);
+  const timer = setInterval(() => {
+    start = Math.min(start + step, target);
+    el.textContent = '€' + fmt(start);
+    if (start >= target) clearInterval(timer);
   }, 16);
 }
 
-async function loadMe(){
-  try{
-    var token = localStorage.getItem('diagn_token');
-    var headers = {};
-    if(token) headers['X-User-Token'] = token;
-    var res = await fetch('/me', {headers: headers});
-    var d = await res.json();
-    if(d.status === 'ok'){
-      currentUser = d;
+function updateNav() {
+  if (!state.user) return;
+  const levels = ['FREE', 'BASE', 'FULL'];
+  $('navEmail').textContent = state.user.email || '';
+  $('navLevel').textContent = levels[state.user.access_level] || 'FREE';
+  show('btnLogout');
+  hide('sectionAuth');
+}
+
+async function loadMe() {
+  if (!state.token) return;
+  try {
+    const res = await fetch('/me', { headers: { 'X-User-Token': state.token } });
+    if (!res.ok) return;
+    const d = await res.json();
+    if (d.status === 'ok') {
+      state.user = d;
       updateNav();
-      document.getElementById('authBox').style.display = 'none';
     }
-  }catch(e){}
-}
-
-async function doAuth(){
-  var email = document.getElementById('emailInput').value.trim();
-  if(!email || !email.includes('@')){ alert('Email non valida'); return; }
-  try{
-    var res = await fetch('/auth', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email: email})});
-    var d = await res.json();
-    if(d.status === 'ok'){
-      currentUser = d;
-      if(d.token) localStorage.setItem('diagn_token', d.token);
-      updateNav();
-      document.getElementById('authBox').style.display = 'none';
-    }
-  }catch(e){ alert('Errore: ' + e.message); }
-}
-
-async function doLogout(){
-  await fetch('/logout');
-  localStorage.removeItem('diagn_token');
-  currentUser = null;
-  document.getElementById('navEmail').textContent = '';
-  document.getElementById('navLevel').textContent = '';
-  document.getElementById('logoutBtn').classList.add('hidden');
-  document.getElementById('authBox').style.display = 'flex';
-  document.getElementById('heroSection').classList.add('hidden');
-  document.getElementById('results').classList.add('hidden');
-}
-
-function updateNav(){
-  if(!currentUser) return;
-  var levels = ['FREE','BASE','FULL'];
-  document.getElementById('navEmail').textContent = currentUser.email;
-  document.getElementById('navLevel').textContent = levels[currentUser.access_level] || 'FREE';
-  document.getElementById('logoutBtn').classList.remove('hidden');
-}
-
-async function analyze(){
-  var fi = document.getElementById('file');
-  if(!fi.files[0]){ alert('Seleziona un file CSV'); return; }
-  var fd = new FormData();
-  fd.append('file', fi.files[0]);
-  document.getElementById('loading').classList.remove('hidden');
-  document.getElementById('results').classList.add('hidden');
-  try{
-    var token = localStorage.getItem('diagn_token');
-    var headers = {};
-    if(token) headers['X-User-Token'] = token;
-    var res = await fetch('/analyze', {method:'POST', body: fd, headers: headers});
-    var d = await res.json();
-    document.getElementById('loading').classList.add('hidden');
-    if(d.status === 'error'){ alert('Errore: ' + (d.msg||'')); return; }
-    renderResults(d);
-  }catch(e){
-    document.getElementById('loading').classList.add('hidden');
-    alert('Errore: ' + e.message);
+  } catch (e) {
+    console.warn('loadMe error:', e.message);
   }
 }
 
-function renderResults(d){
-  var level = d.access_level || 0;
-
-  // HERO
-  document.getElementById('heroSection').classList.remove('hidden');
-  animateValue(document.getElementById('heroLoss'), d.loss_90d || 0, '€', 800);
-  animateValue(document.getElementById('heroRecovery'), d.recovery_potential || 0, '€', 800);
-
-  // DIAGNOSI
-  if(d.diagnosis){
-    var bar = document.getElementById('diagnosisBar');
-    var badge = document.getElementById('diagnosisBadge');
-    var text = document.getElementById('diagnosisText');
-    bar.classList.remove('hidden');
-    var rs = d.risk_score || 0;
-    if(rs >= 70){
-      badge.textContent = 'CRITICO';
-      badge.className = 'text-xs font-700 px-2.5 py-1 rounded-full bg-red-500/20 text-red-400';
-    } else if(rs >= 40){
-      badge.textContent = 'ALTO RISCHIO';
-      badge.className = 'text-xs font-700 px-2.5 py-1 rounded-full bg-yellow-500/20 text-yellow-400';
-    } else {
-      badge.textContent = 'STABILE';
-      badge.className = 'text-xs font-700 px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400';
-    }
-    text.textContent = d.diagnosis;
-  }
-
-  // CLIENTI
-  var cc = document.getElementById('clientiContent');
-  var cb = document.getElementById('clientiBlur');
-  if(level >= 1 && d.top_losses && d.top_losses.length){
-    cb.classList.add('hidden');
-    var html = '';
-    if(d.worst_client){
-      html += '<div class="flex justify-between items-center mb-4 pb-4 border-b border-white/5">';
-      html += '<div><div class="text-xs text-slate-500 mb-1">Cliente critico</div>';
-      html += '<div class="text-2xl font-900 text-red-400">' + d.worst_client + '</div>';
-      html += '<div class="text-xs text-slate-500">Margine: €' + fmt(d.worst_margin||0) + '</div></div>';
-      html += '<div class="text-right"><div class="text-xs text-slate-500 mb-1">Migliore cliente</div>';
-      html += '<div class="text-lg font-700 text-emerald-400">' + (d.best_client||'') + ' €' + fmt(d.best_margin||0) + '</div></div>';
-      html += '</div>';
-    }
-    d.top_losses.forEach(function(c, i){
-      html += '<div class="flex justify-between items-center py-2.5 border-b border-white/5 last:border-0">';
-      html += '<span class="font-600 text-sm">' + c.client + '</span>';
-      html += '<span class="text-red-400 font-700 text-sm">€' + fmt(c.margin) + '</span>';
-      html += '</div>';
-    });
-    cc.innerHTML = html;
-  } else {
-    // Dati fittizi con blur
-    cc.innerHTML = '<div class="space-y-2">' +
-      ['Cliente A','Cliente B','Cliente C'].map(function(n,i){
-        return '<div class="flex justify-between items-center py-2.5 border-b border-white/5"><span class="font-600 text-sm">' + n + '</span><span class="text-red-400 font-700 text-sm">€' + [3900,1350,530][i] + '</span></div>';
-      }).join('') + '</div>';
-    cb.classList.remove('hidden');
-  }
-
-  // KPI
-  var kc = document.getElementById('kpiContent');
-  var kb = document.getElementById('kpiBlur');
-  if(level >= 2){
-    kb.classList.add('hidden');
-    var krows = [
-      ['Concentrazione HHI', (d.concentration||0).toFixed(3), d.concentration > 0.5 ? 'text-red-400' : 'text-emerald-400'],
-      ['Volatilità cashflow', '€' + fmt(d.volatility||0), d.volatility > 500 ? 'text-red-400' : d.volatility > 300 ? 'text-yellow-400' : 'text-emerald-400'],
-      ['Failure probability', ((d.failure_probability||0)*100).toFixed(1) + '%', d.failure_probability > 0.6 ? 'text-red-400' : 'text-emerald-400'],
-      ['Efficienza operativa', (d.efficiency||0).toFixed(2) + 'x', d.efficiency >= 1.2 ? 'text-emerald-400' : d.efficiency >= 0.8 ? 'text-yellow-400' : 'text-red-400'],
-      ['Dipendenza top cliente', (d.dependency||0).toFixed(1) + '%', d.dependency >= 60 ? 'text-red-400' : d.dependency >= 40 ? 'text-yellow-400' : 'text-emerald-400'],
-      ['Cashflow medio', '€' + fmt(d.cashflow_tension||0), (d.cashflow_tension||0) >= 0 ? 'text-emerald-400' : 'text-red-400'],
-    ];
-    kc.innerHTML = krows.map(function(r){
-      return '<div class="flex justify-between items-center py-2.5 border-b border-white/5 last:border-0"><span class="text-sm text-slate-400">' + r[0] + '</span><span class="font-700 text-sm ' + r[2] + '">' + r[1] + '</span></div>';
-    }).join('');
-  } else {
-    kc.innerHTML = '<div class="space-y-2">' +
-      [['Concentrazione HHI','0.4xx'],['Volatilità cashflow','€x.xxx'],['Failure probability','xx.x%'],['Efficienza operativa','x.xxx'],['Dipendenza top cliente','xx.x%'],['Cashflow medio','€xxx']].map(function(r){
-        return '<div class="flex justify-between items-center py-2.5 border-b border-white/5"><span class="text-sm text-slate-400">' + r[0] + '</span><span class="font-700 text-sm text-slate-600 blur-sm select-none">' + r[1] + '</span></div>';
-      }).join('') + '</div>';
-    kb.classList.remove('hidden');
-  }
-
-  document.getElementById('results').classList.remove('hidden');
-}
-
-async function unlock(tier){
-  if(!currentUser){
-    document.getElementById('emailInput').focus();
-    alert('Inserisci prima la tua email.');
+async function login() {
+  const email = ($('inputEmail').value || '').trim();
+  if (!email || !email.includes('@')) {
+    $('authError').textContent = 'Inserisci una email valida';
+    show('authError');
     return;
   }
-  try{
-    var token = localStorage.getItem('diagn_token');
-    var headers = {'X-User-Token': token || ''};
-    var res = await fetch('/create-checkout-session/' + tier, {headers: headers});
-    var d = await res.json();
-    if(d.status === 'ok' && d.url){ window.location.href = d.url; }
-    else { alert('Errore: ' + (d.msg || 'riprova')); }
-  }catch(e){ alert('Errore: ' + e.message); }
+  hide('authError');
+  try {
+    const res = await fetch('/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    if (!res.ok) throw new Error('Risposta server: ' + res.status);
+    const d = await res.json();
+    if (d.status !== 'ok') throw new Error(d.msg || 'Errore auth');
+    state.token = d.token;
+    state.user = d;
+    localStorage.setItem('diagn_token', d.token);
+    updateNav();
+  } catch (e) {
+    $('authError').textContent = e.message;
+    show('authError');
+  }
+}
+
+function logout() {
+  state.token = '';
+  state.user = null;
+  state.data = null;
+  localStorage.removeItem('diagn_token');
+  $('navEmail').textContent = '';
+  $('navLevel').textContent = '';
+  hide('btnLogout');
+  show('sectionAuth');
+  hide('sectionResults');
+  show('sectionHero');
+  fetch('/logout').catch(() => {});
+}
+
+async function analyze() {
+  const fileInput = $('inputFile');
+  if (!fileInput.files[0]) { showError('Seleziona un file CSV'); return; }
+  if (!state.user) {
+    const email = ($('inputEmail').value || '').trim();
+    if (!email || !email.includes('@')) { showError('Inserisci prima la tua email'); return; }
+    await login();
+    if (!state.user) return;
+  }
+  hide('sectionError');
+  hide('sectionResults');
+  show('sectionLoading');
+  try {
+    const fd = new FormData();
+    fd.append('file', fileInput.files[0]);
+    const res = await fetch('/analyze', {
+      method: 'POST',
+      headers: { 'X-User-Token': state.token },
+      body: fd
+    });
+    const text = await res.text();
+    let d;
+    try { d = JSON.parse(text); } catch(e) { throw new Error('Risposta non valida dal server'); }
+    if (!res.ok || d.status === 'error') throw new Error(d.msg || d.error || 'Errore analisi');
+    state.data = d;
+    if (d.recovery_potential) localStorage.setItem('diagn_last_recovery', d.recovery_potential);
+    render(d);
+  } catch (e) {
+    showError(e.message);
+  } finally {
+    hide('sectionLoading');
+  }
+}
+
+function render(d) {
+  if (!d) return;
+  const level = d.access_level || 0;
+
+  hide('sectionHero');
+  show('sectionResults');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  animateValue($('numLoss'), d.loss_90d || 0, 800);
+  animateValue($('numRecovery'), d.recovery_potential || 0, 800);
+
+  if (d.diagnosis) {
+    const rs = d.risk_score || 0;
+    const badge = $('badgeDiag');
+    $('textDiag').textContent = d.diagnosis;
+    $('scoreDiag').textContent = rs.toFixed(1) + '%';
+    if (rs >= 70) { badge.textContent = 'CRITICO'; badge.className = 'text-xs font-bold px-2.5 py-1 rounded-full bg-red-500/15 text-red-400'; }
+    else if (rs >= 40) { badge.textContent = 'ALTO RISCHIO'; badge.className = 'text-xs font-bold px-2.5 py-1 rounded-full bg-yellow-500/15 text-yellow-400'; }
+    else { badge.textContent = 'STABILE'; badge.className = 'text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400'; }
+    show('rowDiagnosis');
+  }
+
+  const cc = $('contentClienti');
+  const oc = $('overlayClienti');
+  if (level >= 1 && d.top_losses && d.top_losses.length) {
+    hide('overlayClienti');
+    let h = '';
+    if (d.worst_client) {
+      h += '<div class="grid grid-cols-2 gap-3 mb-4">';
+      h += '<div class="bg-red-950/25 border border-red-500/15 rounded-xl p-3"><div class="text-xs text-slate-500 mb-1">Critico</div><div class="text-xl font-black text-red-400">' + d.worst_client + '</div><div class="text-xs text-slate-500">-€' + fmt(d.worst_margin) + '</div></div>';
+      h += '<div class="bg-emerald-950/25 border border-emerald-500/15 rounded-xl p-3"><div class="text-xs text-slate-500 mb-1">Migliore</div><div class="text-xl font-black text-emerald-400">' + (d.best_client || '') + '</div><div class="text-xs text-slate-500">€' + fmt(d.best_margin) + '</div></div>';
+      h += '</div>';
+    }
+    d.top_losses.forEach(c => {
+      h += '<div class="flex justify-between items-center py-2.5 border-b border-white/5 last:border-0"><span class="text-sm font-semibold">' + c.client + '</span><span class="text-red-400 font-bold text-sm tabular-nums">-€' + fmt(c.margin) + '</span></div>';
+    });
+    cc.innerHTML = h;
+  } else {
+    cc.innerHTML = '<div class="blur-lock space-y-0">' +
+      [['Cliente A', 3900], ['Cliente B', 1350], ['Cliente C', 530]].map(([n, v]) =>
+        '<div class="flex justify-between py-2.5 border-b border-white/5"><span class="text-sm font-semibold">' + n + '</span><span class="text-red-400 font-bold text-sm">-€' + fmt(v) + '</span></div>'
+      ).join('') + '</div>';
+    show('overlayClienti');
+  }
+
+  const kc = $('contentKpi');
+  if (level >= 2) {
+    hide('overlayKpi');
+    const rows = [
+      ['Concentrazione HHI', (d.concentration || 0).toFixed(3), d.concentration > 0.5 ? '#f87171' : '#34d399'],
+      ['Volatilità cashflow', '€' + fmt(d.volatility), d.volatility > 500 ? '#f87171' : d.volatility > 300 ? '#fbbf24' : '#34d399'],
+      ['Failure probability', ((d.failure_probability || 0) * 100).toFixed(1) + '%', (d.failure_probability || 0) > 0.6 ? '#f87171' : '#34d399'],
+      ['Efficienza operativa', (d.efficiency || 0).toFixed(2) + 'x', (d.efficiency || 0) >= 1.2 ? '#34d399' : (d.efficiency || 0) >= 0.8 ? '#fbbf24' : '#f87171'],
+      ['Dipendenza top cliente', (d.dependency || 0).toFixed(1) + '%', (d.dependency || 0) >= 60 ? '#f87171' : (d.dependency || 0) >= 40 ? '#fbbf24' : '#34d399'],
+      ['Cashflow medio', '€' + fmt(d.cashflow_tension), (d.cashflow_tension || 0) >= 0 ? '#34d399' : '#f87171'],
+    ];
+    kc.innerHTML = rows.map(([label, val, color]) =>
+      '<div class="flex justify-between items-center py-2.5 border-b border-white/5 last:border-0"><span class="text-sm text-slate-400">' + label + '</span><span class="font-bold text-sm tabular-nums" style="color:' + color + '">' + val + '</span></div>'
+    ).join('');
+  } else {
+    kc.innerHTML = '<div class="blur-lock">' +
+      [['Concentrazione HHI', '0.xxx'], ['Volatilità cashflow', '€x.xxx'], ['Failure probability', 'xx.x%'], ['Efficienza operativa', 'x.xx x'], ['Dipendenza top cliente', 'xx.x%'], ['Cashflow medio', '€xxx']].map(([l, v]) =>
+        '<div class="flex justify-between items-center py-2.5 border-b border-white/5"><span class="text-sm text-slate-400">' + l + '</span><span class="font-bold text-sm text-slate-600">' + v + '</span></div>'
+      ).join('') + '</div>';
+    show('overlayKpi');
+  }
+}
+
+async function checkout(tier) {
+  if (!state.user) { showError('Inserisci prima la tua email.'); return; }
+  if (!state.token) { showError('Token mancante. Esci e rientra.'); return; }
+  try {
+    const res = await fetch('/create-checkout-session/' + tier, {
+      headers: { 'X-User-Token': state.token }
+    });
+    if (!res.ok) throw new Error('Errore server: ' + res.status);
+    const d = await res.json();
+    if (d.status === 'ok' && d.url) {
+      window.location.href = d.url;
+    } else {
+      throw new Error(d.msg || 'URL checkout non ricevuto');
+    }
+  } catch (e) {
+    showError('Errore pagamento: ' + e.message);
+  }
 }
 
 loadMe();

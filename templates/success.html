@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DiagnEco — Accesso sbloccato</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+*{font-family:system-ui,-apple-system,sans-serif}
+@keyframes fadeup{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes check{from{stroke-dashoffset:60}to{stroke-dashoffset:0}}
+.fadeup{animation:fadeup .6s ease forwards}
+.check{stroke-dasharray:60;animation:check .8s ease .4s forwards;stroke-dashoffset:60}
+</style>
+</head>
+<body class="bg-[#030712] text-white min-h-screen flex flex-col">
+
+<nav class="px-6 py-4 flex justify-between items-center border-b border-white/5">
+  <span class="font-black text-lg tracking-tight">Diagn<span class="text-blue-500">Eco</span></span>
+  <a href="/" class="text-sm text-slate-500 hover:text-white transition">← Torna all'analisi</a>
+</nav>
+
+<div class="flex-1 flex items-center justify-center px-6 py-16">
+  <div class="max-w-md w-full text-center fadeup">
+
+    <div class="w-20 h-20 mx-auto mb-8 rounded-full bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center">
+      <svg viewBox="0 0 40 40" class="w-10 h-10" fill="none">
+        <path class="check" d="M10 20 L17 27 L30 13" stroke="#34d399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <div class="inline-block text-xs font-bold uppercase tracking-widest text-emerald-400 border border-emerald-500/20 bg-emerald-500/8 px-4 py-1.5 rounded-full mb-6">Accesso sbloccato</div>
+
+    <h1 class="text-4xl font-black leading-tight tracking-tight mb-4">
+      Vuoi recuperare davvero<br>
+      <span id="numRecovery" class="text-emerald-400">€30.000</span>?
+    </h1>
+
+    <p class="text-slate-400 mb-10 leading-relaxed text-sm">
+      Hai già i clienti in perdita.<br>
+      Con FULL vedi la struttura economica completa —<br>
+      KPI, concentrazione, efficienza, volatilità.<br>
+      <span class="text-white font-semibold">Le informazioni che ti mancano per agire.</span>
+    </p>
+
+    <div id="upsellBlock" class="bg-gradient-to-b from-blue-950/40 to-purple-950/30 border border-blue-500/20 rounded-2xl p-8 mb-6">
+      <div class="text-xs font-bold uppercase tracking-widest text-blue-400 mb-4">Upgrade FULL</div>
+      <div class="flex items-baseline justify-center gap-2 mb-5">
+        <span class="text-5xl font-black">€99</span>
+        <span class="text-slate-500 text-sm">una tantum</span>
+      </div>
+      <ul class="text-sm text-slate-300 space-y-2 mb-6 text-left max-w-xs mx-auto">
+        <li class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span>8 KPI strutturali completi</li>
+        <li class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span>Concentrazione HHI</li>
+        <li class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span>Volatilità cashflow</li>
+        <li class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span>Efficienza operativa</li>
+        <li class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span>Dipendenza cliente e failure probability</li>
+      </ul>
+      <button onclick="upgradeToFull()"
+        class="w-full py-4 rounded-xl font-black text-base bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 transition shadow-lg">
+        Upgrade completo — €99
+      </button>
+      <div class="text-xs text-slate-600 mt-3">Nessun abbonamento · Pagamento una tantum</div>
+    </div>
+
+    <div id="errorBlock" class="hidden text-sm text-red-400 mb-4"></div>
+
+    <a href="/" class="text-sm text-slate-600 hover:text-slate-400 transition underline underline-offset-2">
+      No grazie, torna all'analisi
+    </a>
+
+  </div>
+</div>
+
+<script>
+var params = new URLSearchParams(window.location.search);
+var token = params.get('token') || localStorage.getItem('diagn_token') || '';
+var tier = params.get('tier') || '';
+
+if (params.get('token')) localStorage.setItem('diagn_token', params.get('token'));
+
+var saved = localStorage.getItem('diagn_last_recovery');
+if (saved) {
+  var n = parseInt(saved);
+  if (!isNaN(n)) document.getElementById('numRecovery').textContent = '€' + n.toLocaleString('it-IT');
+}
+
+if (tier === 'full') {
+  document.getElementById('upsellBlock').innerHTML =
+    '<div class="text-emerald-400 font-bold text-lg mb-2">Accesso FULL attivato ✓</div>' +
+    '<div class="text-slate-400 text-sm">Torna all\'analisi per vedere tutti i KPI sbloccati.</div>' +
+    '<a href="/" class="inline-block mt-4 bg-blue-600 hover:bg-blue-500 transition px-6 py-3 rounded-xl font-bold text-sm">Vai all\'analisi →</a>';
+}
+
+async function upgradeToFull() {
+  if (!token) {
+    document.getElementById('errorBlock').textContent = 'Token mancante. Torna all\'analisi e riprova.';
+    document.getElementById('errorBlock').classList.remove('hidden');
+    return;
+  }
+  try {
+    var res = await fetch('/create-checkout-session/full', {
+      headers: { 'X-User-Token': token }
+    });
+    if (!res.ok) throw new Error('Errore server: ' + res.status);
+    var d = await res.json();
+    if (d.status === 'ok' && d.url) {
+      window.location.href = d.url;
+    } else {
+      throw new Error(d.msg || 'URL non ricevuto');
+    }
+  } catch (e) {
+    document.getElementById('errorBlock').textContent = 'Errore: ' + e.message;
+    document.getElementById('errorBlock').classList.remove('hidden');
+  }
+}
+</script>
+</body>
+</html>
